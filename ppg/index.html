@@ -510,7 +510,7 @@ LOGO="postmarketos-logo"</pre>
     <h2>Install Openbox, Cage, and Phosh</h2>
     <div class="codebox">
       <span class="label">inside alpine</span>
-      <pre>sudo apk add openbox cage</pre>
+      <pre>sudo apk add openbox cage dbus</pre>
       <button class="copy-btn">Copy</button>
     </div>
     <div class="codebox">
@@ -570,12 +570,19 @@ termux-x11 :0 &</pre>
       <pre>export DISPLAY=:0
 export XDG_RUNTIME_DIR=/tmp
 openbox &
-cage -- phoc -S -C /usr/share/phosh/phoc.ini -E /usr/libexec/phosh &</pre>
+dbus-run-session -- cage -- phoc -S -C /usr/share/phosh/phoc.ini -E '/usr/libexec/phosh -U'</pre>
       <button class="copy-btn">Copy</button>
     </div>
     <div class="callout">
-      <strong>This command differs from the original guide.</strong> The guide ends it with <code>-U</code>, which <code>phoc</code> does not accept &mdash; and an unrecognised option makes <code>phoc</code> print <code>Unknown option -U</code> and exit immediately, so Phosh never starts. The flags above are the ones upstream's own <code>phosh-session</code> script uses: <code>-S</code> puts <code>phoc</code> in shell mode so Phosh can attach to it, and <code>-C</code> points at the config file that ships with the <code>phosh</code> package. The <code>--</code> makes explicit that everything after it is for <code>phoc</code>, not for <code>cage</code>.
+      <strong>This command differs from the original guide, in three ways that all matter.</strong>
+      <br><br>
+      <strong>1. <code>-U</code> moved inside the quotes.</strong> The original ends the line with a bare <code>-U</code>, where it lands on <code>phoc</code> &mdash; which has no such option, so <code>phoc</code> prints <code>Unknown option -U</code> and exits before Phosh ever starts. <code>-U</code> is a <em>Phosh</em> option meaning "don't start with the screen locked", so it belongs inside the <code>-E</code> string. Without it Phosh comes up on a lock screen you have no PIN for.
+      <br><br>
+      <strong>2. <code>dbus-run-session</code> in front.</strong> Phosh is a GNOME shell and needs a session message bus; it depends on <code>dbus-x11</code> and reaches D-Bus services for secrets, power, networking and audio. Nothing in a proot container provides one, so it has to be started here. Upstream's own <code>phosh-session</code> script does the same thing when it finds no bus.
+      <br><br>
+      <strong>3. <code>-S</code> and <code>-C</code>.</strong> These are the flags <code>phosh-session</code> itself passes: <code>-S</code> puts <code>phoc</code> in shell mode so Phosh can attach as the shell, and <code>-C</code> points at the <code>phoc.ini</code> that ships in the <code>phosh</code> package. The <code>--</code> separators make clear which arguments belong to which program.
     </div>
+    <p class="small-note">Note this command is <strong>not</strong> backgrounded with <code>&amp;</code>. Keep it in the foreground so you can see why it exits if it does.</p>
     <p class="small-note">Do not substitute <code>phosh-session</code> for this command, even though that is the normal way to start Phosh on real hardware. It forces <code>WLR_BACKENDS=drm,libinput</code>, which needs direct access to the display and input hardware &mdash; exactly what an unprivileged proot container does not have.</p>
   </section>
 
@@ -604,6 +611,20 @@ X11 error: op 18:0, code 5</pre>
     </div>
     <p class="small-note">They all say the same thing in different words: there is no direct access to the GPU or display hardware from inside an unprivileged container, so rendering falls back to <code>pixman</code>, which draws on the CPU. That is the expected outcome here, and Phosh is still usable at phone resolution. Seeing <code>Mapping input device x11-pointer</code> and <code>x11-touch</code> means input is working.</p>
     <p class="small-note">The line that actually matters is anything ending in the compositor exiting &mdash; for example <code>phoc-WARNING **: Unknown option</code>, which means a flag in your launch command is wrong and <code>phoc</code> quit before starting.</p>
+
+    <p><strong>A window opens, loads for a while, then closes.</strong> That means <code>phoc</code> started and Phosh itself exited; <code>phoc</code> returns its session's exit status, so it follows the shell out. To capture why, run the launch command in the foreground and tee it to a file:</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>dbus-run-session -- cage -- phoc -v -S -C /usr/share/phosh/phoc.ini \
+  -E '/usr/libexec/phosh -U' 2>&1 | tee ~/phosh.log</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p>When the window closes, the log is still there. The interesting part is the end of it:</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>tail -40 ~/phosh.log</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
   </section>
 
   <footer>
