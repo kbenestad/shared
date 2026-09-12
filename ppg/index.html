@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>postmarketOS + Phosh in Termux</title>
+<style>
+  :root {
+    --ink: #1c2321;
+    --paper: #f6f3ec;
+    --panel: #ffffff;
+    --rule: #d9d3c3;
+    --accent: #3a5a40;
+    --accent-dim: #6b8f71;
+    --code-bg: #21261f;
+    --code-text: #dfe8d8;
+    --code-comment: #7c9c7f;
+    --warn: #9c4221;
+    --warn-bg: #fbeee7;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 18px 80px; }
+
+  header.hero {
+    padding: 48px 18px 30px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 8px;
+  }
+  header.hero .wrap { padding: 0; }
+  .kicker {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--accent-dim);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-size: 34px;
+    line-height: 1.15;
+    margin: 0 0 14px;
+    font-weight: 600;
+    max-width: 22ch;
+  }
+  .dek {
+    font-size: 17px;
+    color: #4a4f45;
+    max-width: 46ch;
+    margin: 0;
+  }
+  .meta-row {
+    margin-top: 22px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
+    color: #6b6f63;
+  }
+  .meta-row a { color: var(--accent); }
+
+  nav.toc {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin: 28px 0 40px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  nav.toc p {
+    margin: 0 0 10px;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    color: var(--accent-dim);
+  }
+  nav.toc ol { margin: 0; padding-left: 20px; font-size: 14.5px; }
+  nav.toc li { margin-bottom: 6px; }
+  nav.toc a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  nav.toc a:hover { border-color: var(--accent); }
+
+  section.step {
+    margin-bottom: 46px;
+    scroll-margin-top: 18px;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .step-num {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
+    color: var(--accent-dim);
+    white-space: nowrap;
+  }
+  h2 {
+    font-size: 21px;
+    margin: 0;
+    font-weight: 600;
+  }
+  .step p { font-size: 16px; }
+  .step p.small-note {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+    color: #5a5f52;
+    background: #edeadf;
+    border-left: 3px solid var(--accent-dim);
+    padding: 10px 14px;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .callout {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14.5px;
+    background: var(--warn-bg);
+    border-left: 3px solid var(--warn);
+    color: #5c2c14;
+    padding: 12px 16px;
+    border-radius: 0 4px 4px 0;
+    margin: 14px 0;
+  }
+  .callout strong { color: var(--warn); }
+
+  .codebox {
+    position: relative;
+    background: var(--code-bg);
+    border-radius: 6px;
+    margin: 14px 0;
+    overflow: hidden;
+  }
+  .codebox .label {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 11.5px;
+    color: #93a68d;
+    padding: 9px 14px 0;
+    display: block;
+  }
+  .codebox pre {
+    margin: 0;
+    padding: 10px 14px 14px;
+    overflow-x: auto;
+    font-family: "SF Mono", "Menlo", "Consolas", monospace;
+    font-size: 13.5px;
+    color: var(--code-text);
+    white-space: pre;
+  }
+  .codebox .cm { color: var(--code-comment); }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 12px;
+    background: #33392f;
+    color: #dfe8d8;
+    border: 1px solid #454c3d;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .copy-btn:active { transform: scale(0.96); }
+  .copy-btn.copied { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .editor-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .editor-card {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 14px;
+  }
+  .editor-card h3 {
+    font-size: 13px;
+    margin: 0 0 8px;
+    color: var(--accent);
+  }
+  .editor-card ol {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13.5px;
+    color: #3a3f35;
+  }
+  .editor-card li { margin-bottom: 5px; }
+  .editor-card kbd {
+    font-family: "SF Mono", monospace;
+    background: #ece8dc;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 12px;
+  }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
+    color: #6b6f63;
+  }
+  footer a { color: var(--accent); }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 28px; }
+    header.hero { padding: 36px 18px 24px; }
+    .editor-tabs { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">TERMUX &middot; PROOT &middot; ALPINE &middot; POSTMARKETOS</p>
+    <h1>Phosh on your phone, without flashing anything</h1>
+    <p class="dek">A step-by-step build of postmarketOS's Phosh interface inside a Termux proot container &mdash; adapted from Ivon Huang's guide, with the gaps filled in.</p>
+    <p class="meta-row">Base guide: <a href="https://ivonblog.com/en-us/posts/postmarketos-in-termux-proot/" target="_blank" rel="noopener">ivonblog.com</a> &middot; This version fills in the missing <code>visudo</code> and editor-save steps.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="callout">
+    <strong>Read this first.</strong> This is not real postmarketOS &mdash; it's Alpine Linux running in an unprivileged proot container, converted to use pmOS repositories and packages. There's no direct hardware access, no kernel-level power management, and Phosh is a Wayland compositor nested awkwardly inside X11. Expect roughness: the source guide itself notes Phosh may only launch reliably once or twice per session.
+  </div>
+
+  <nav class="toc">
+    <p>ON THIS PAGE</p>
+    <ol>
+      <li><a href="#prereqs">Prerequisites</a></li>
+      <li><a href="#s1">1. Install proot Alpine</a></li>
+      <li><a href="#s2">2. Switch Alpine to v3.20</a></li>
+      <li><a href="#s3">3. Create a user &amp; grant sudo</a></li>
+      <li><a href="#s4">4. Set the timezone</a></li>
+      <li><a href="#s5">5. (Optional) Enable SSH</a></li>
+      <li><a href="#s6">6. Add the postmarketOS repo</a></li>
+      <li><a href="#s7">7. Install postmarketOS keys</a></li>
+      <li><a href="#s8">8. Set os-release identity</a></li>
+      <li><a href="#s9">9. Install Openbox, Cage, Phosh</a></li>
+      <li><a href="#s10">10. Launch everything</a></li>
+      <li><a href="#s11">11. Fit it to your screen</a></li>
+    </ol>
+  </nav>
+
+  <section class="step" id="prereqs">
+    <div class="step-head"><span class="step-num">BEFORE YOU START</span></div>
+    <h2>Prerequisites</h2>
+    <p>Install these from F-Droid or their official sources first &mdash; not the Play Store versions, which are outdated:</p>
+    <p class="small-note">Termux &middot; Termux:X11 &middot; (optional) a virglrenderer build for hardware acceleration &middot; Hacker's Keyboard, for a real keyboard layout when typing into the desktop.</p>
+  </section>
+
+  <section class="step" id="s1">
+    <div class="step-head"><span class="step-num">STEP 1</span></div>
+    <h2>Install proot Alpine Linux</h2>
+    <p>Run these in Termux, one line at a time:</p>
+    <div class="codebox">
+      <span class="label">termux</span>
+      <pre>pkg update
+pkg install proot-distro pulseaudio
+proot-distro install alpine</pre>
+      <button class="copy-btn" data-copy="pkg update
+pkg install proot-distro pulseaudio
+proot-distro install alpine">Copy</button>
+    </div>
+  </section>
+
+  <section class="step" id="s2">
+    <div class="step-head"><span class="step-num">STEP 2</span></div>
+    <h2>Switch Alpine's repo from Edge to v3.20</h2>
+    <p>Edge is Alpine's rolling/unstable branch. Log in and edit the repo file:</p>
+    <div class="codebox">
+      <span class="label">termux</span>
+      <pre>proot-distro login alpine --shared-tmp
+apk update
+apk add nano</pre>
+      <button class="copy-btn" data-copy="proot-distro login alpine --shared-tmp
+apk update
+apk add nano">Copy</button>
+    </div>
+    <p>Then open the repo file:</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>nano /etc/apk/repositories</pre>
+      <button class="copy-btn" data-copy="nano /etc/apk/repositories">Copy</button>
+    </div>
+    <p>Inside nano: use the arrow keys to edit directly (no mode switching needed), change every line that says <code>edge</code> to <code>v3.20</code> (e.g. <code>.../alpine/edge/main</code> &rarr; <code>.../alpine/v3.20/main</code>), then press <kbd>Ctrl+O</kbd> then Enter to save, and <kbd>Ctrl+X</kbd> to exit.</p>
+    <p>Now update:</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>apk update
+apk upgrade</pre>
+      <button class="copy-btn" data-copy="apk update
+apk upgrade">Copy</button>
+    </div>
+  </section>
+
+  <section class="step" id="s3">
+    <div class="step-head"><span class="step-num">STEP 3</span></div>
+    <h2>Create a user and grant sudo access</h2>
+    <p>Create the account:</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>apk add sudo
+addgroup storage
+adduser -g wheel,storage,video,audio user</pre>
+      <button class="copy-btn" data-copy="apk add sudo
+addgroup storage
+adduser -g wheel,storage,video,audio user">Copy</button>
+    </div>
+    <p>You'll be prompted to set a password for <code>user</code> &mdash; type one and confirm it.</p>
+
+    <div class="callout">
+      <strong>The gap in the original guide:</strong> it tells you to run <code>visudo</code> but never says what to type. Here's exactly what goes in the file and how to save it.
+    </div>
+
+    <p><code>visudo</code> opens whatever editor the <code>EDITOR</code> variable points to &mdash; on Alpine that's vi by default, not nano. Install nano and point <code>visudo</code> at it first:</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>apk add nano
+export EDITOR=nano
+visudo</pre>
+      <button class="copy-btn" data-copy="apk add nano
+export EDITOR=nano
+visudo">Copy</button>
+    </div>
+    <p>This opens <code>/etc/sudoers</code> in nano. Add this line at the <strong>very bottom</strong> of the file &mdash; it lets your new user run <code>sudo</code> without typing a password every time, since this container only you can access:</p>
+    <div class="codebox">
+      <span class="label">add to sudoers</span>
+      <pre>user ALL=(ALL) NOPASSWD: ALL</pre>
+      <button class="copy-btn" data-copy="user ALL=(ALL) NOPASSWD: ALL">Copy</button>
+    </div>
+    <p class="small-note">Prefer to keep a password prompt on <code>sudo</code>? Use <code>user ALL=(ALL) ALL</code> instead. Either works with the rest of this guide &mdash; the passwordless version is just less friction inside a container nobody else can reach.</p>
+    <div class="editor-card" style="margin: 16px 0;">
+      <h3>SAVING IN NANO</h3>
+      <ol>
+        <li>Use arrow keys to reach the last line</li>
+        <li>Type the sudoers line above</li>
+        <li>Press <kbd>Ctrl+O</kbd> then Enter to write out</li>
+        <li>Press <kbd>Ctrl+X</kbd> to exit</li>
+      </ol>
+    </div>
+    <p class="small-note">The <code>export EDITOR=nano</code> only lasts for this terminal session. If you open a new Termux session later and run <code>visudo</code> again, you'll need to set it again first &mdash; or it'll fall back to vi.</p>
+  </section>
+
+  <section class="step" id="s4">
+    <div class="step-head"><span class="step-num">STEP 4</span></div>
+    <h2>Set the timezone</h2>
+    <p>Replace <code>Asia/Taipei</code> with your own zone if different (list at <code>/usr/share/zoneinfo</code>):</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>sudo ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime
+sudo setup-timezone</pre>
+      <button class="copy-btn" data-copy="sudo ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime
+sudo setup-timezone">Copy</button>
+    </div>
+  </section>
+
+  <section class="step" id="s5">
+    <div class="step-head"><span class="step-num">STEP 5 &middot; OPTIONAL</span></div>
+    <h2>Enable SSH into the container</h2>
+    <p>Useful if you'd rather type on a real keyboard over the network. Skip this if you don't need it.</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>sudo nano /etc/ssh/sshd_config</pre>
+      <button class="copy-btn" data-copy="sudo nano /etc/ssh/sshd_config">Copy</button>
+    </div>
+    <p>Find the line starting with <code>Port</code> and change <code>22</code> to <code>8023</code> (regular Termux, outside proot, may already use port 22). Save with <kbd>Ctrl+O</kbd>, Enter, then exit with <kbd>Ctrl+X</kbd>.</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>ssh-keygen -A
+rc-update add sshd
+rc-service sshd start
+ip addr</pre>
+      <button class="copy-btn" data-copy="ssh-keygen -A
+rc-update add sshd
+rc-service sshd start
+ip addr">Copy</button>
+    </div>
+    <p class="small-note">The last command prints your phone's IP address &mdash; you'll need it to connect. Note: <code>rc-service</code>, not the guide's typo <code>rc-serive</code>.</p>
+  </section>
+
+  <section class="step" id="s6">
+    <div class="step-head"><span class="step-num">STEP 6</span></div>
+    <h2>Add the postmarketOS repository</h2>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>nano /etc/apk/repositories</pre>
+      <button class="copy-btn" data-copy="nano /etc/apk/repositories">Copy</button>
+    </div>
+    <p>Add this line at the very <strong>top</strong> of the file:</p>
+    <div class="codebox">
+      <span class="label">add to repositories</span>
+      <pre>https://mirror.postmarketos.org/postmarketos/v24.06</pre>
+      <button class="copy-btn" data-copy="https://mirror.postmarketos.org/postmarketos/v24.06">Copy</button>
+    </div>
+    <p class="small-note">v24.06 is pmOS's current Stable release paired with Alpine v3.20. Check <a href="https://wiki.postmarketos.org/wiki/Releases" target="_blank" rel="noopener">the pmOS releases wiki</a> in case a newer stable version has since shipped &mdash; if so, use that version number instead, everywhere it appears in this guide.</p>
+  </section>
+
+  <section class="step" id="s7">
+    <div class="step-head"><span class="step-num">STEP 7</span></div>
+    <h2>Trust postmarketOS's package signing keys</h2>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>apk add -u --allow-untrusted postmarketos-keys
+apk update && apk upgrade</pre>
+      <button class="copy-btn" data-copy="apk add -u --allow-untrusted postmarketos-keys
+apk update && apk upgrade">Copy</button>
+    </div>
+  </section>
+
+  <section class="step" id="s8">
+    <div class="step-head"><span class="step-num">STEP 8</span></div>
+    <h2>Set the system identity</h2>
+    <p>Open the file:</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>sudo nano /etc/os-release</pre>
+      <button class="copy-btn" data-copy="sudo nano /etc/os-release">Copy</button>
+    </div>
+    <p>Select all existing lines and delete them (in nano: <kbd>Ctrl+Shift+6</kbd> or <kbd>Alt+A</kbd> to start a selection, arrow down to the end, then <kbd>Ctrl+K</kbd> to cut &mdash; or just hold Backspace/Delete until the file is empty), then type in:</p>
+    <div class="codebox">
+      <span class="label">/etc/os-release</span>
+      <pre>PRETTY_NAME="postmarketOS v24.06"
+NAME="postmarketOS"
+VERSION_ID="v24.06"
+VERSION="v24.06"
+ID="postmarketos"
+ID_LIKE="alpine"
+HOME_URL="https://www.postmarketos.org/"
+SUPPORT_URL="https://gitlab.com/postmarketOS"
+BUG_REPORT_URL="https://gitlab.com/postmarketOS/pmaports/issues"
+LOGO="postmarketos-logo"</pre>
+      <button class="copy-btn" data-copy='PRETTY_NAME="postmarketOS v24.06"
+NAME="postmarketOS"
+VERSION_ID="v24.06"
+VERSION="v24.06"
+ID="postmarketos"
+ID_LIKE="alpine"
+HOME_URL="https://www.postmarketos.org/"
+SUPPORT_URL="https://gitlab.com/postmarketOS"
+BUG_REPORT_URL="https://gitlab.com/postmarketOS/pmaports/issues"
+LOGO="postmarketos-logo"'>Copy</button>
+    </div>
+    <p>Then save with <kbd>Ctrl+O</kbd>, Enter, and exit with <kbd>Ctrl+X</kbd>.</p>
+  </section>
+
+  <section class="step" id="s9">
+    <div class="step-head"><span class="step-num">STEP 9</span></div>
+    <h2>Install Openbox, Cage, and Phosh</h2>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>sudo apk add openbox cage</pre>
+      <button class="copy-btn" data-copy="sudo apk add openbox cage">Copy</button>
+    </div>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>sudo apk add postmarketos-ui-phosh \
+postmarketos-tweaks \
+firefox \
+mobile-config-firefox \
+font-noto \
+font-noto-cjk \
+font-noto-cjk-extra \
+font-noto-emoji</pre>
+      <button class="copy-btn" data-copy="sudo apk add postmarketos-ui-phosh \
+postmarketos-tweaks \
+firefox \
+mobile-config-firefox \
+font-noto \
+font-noto-cjk \
+font-noto-cjk-extra \
+font-noto-emoji">Copy</button>
+    </div>
+    <p class="small-note">This is a large install &mdash; give it time on a slower connection.</p>
+  </section>
+
+  <section class="step" id="s10">
+    <div class="step-head"><span class="step-num">STEP 10</span></div>
+    <h2>Launch everything</h2>
+    <p>Each of these runs in order. Steps 1&ndash;3 happen in plain Termux, <em>before</em> logging into Alpine.</p>
+
+    <p><strong>10.1 &mdash; Start PulseAudio (Termux):</strong></p>
+    <div class="codebox">
+      <span class="label">termux</span>
+      <pre>pulseaudio --start --exit-idle-time=-1
+pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1</pre>
+      <button class="copy-btn" data-copy="pulseaudio --start --exit-idle-time=-1
+pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1">Copy</button>
+    </div>
+
+    <p><strong>10.2 &mdash; Start Termux:X11 (Termux):</strong></p>
+    <div class="codebox">
+      <span class="label">termux</span>
+      <pre>export DISPLAY=:0
+termux-x11 :0 &</pre>
+      <button class="copy-btn" data-copy="export DISPLAY=:0
+termux-x11 :0 &">Copy</button>
+    </div>
+    <p class="small-note">This should open the Termux:X11 app automatically. If it doesn't, open it manually from your app drawer.</p>
+
+    <p><strong>10.3 &mdash; Start virglrenderer, if installed (Termux):</strong></p>
+    <div class="codebox">
+      <span class="label">termux</span>
+      <pre>virgl_test_server_android &</pre>
+      <button class="copy-btn" data-copy="virgl_test_server_android &">Copy</button>
+    </div>
+
+    <p><strong>10.4 &mdash; Log into Alpine as your user:</strong></p>
+    <div class="codebox">
+      <span class="label">termux</span>
+      <pre>proot-distro login alpine --user user --shared-tmp</pre>
+      <button class="copy-btn" data-copy="proot-distro login alpine --user user --shared-tmp">Copy</button>
+    </div>
+
+    <p><strong>10.5 &mdash; Launch Openbox, Cage, and Phosh (inside Alpine):</strong></p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>export DISPLAY=:0
+export XDG_RUNTIME_DIR=/tmp
+openbox &
+cage phoc -E '/usr/libexec/phosh' -U &</pre>
+      <button class="copy-btn" data-copy="export DISPLAY=:0
+export XDG_RUNTIME_DIR=/tmp
+openbox &
+cage phoc -E '/usr/libexec/phosh' -U &">Copy</button>
+    </div>
+  </section>
+
+  <section class="step" id="s11">
+    <div class="step-head"><span class="step-num">STEP 11</span></div>
+    <h2>Fit the display to your screen</h2>
+    <p>Switch to the Termux:X11 app. An Openbox window frame should appear &mdash; double-tap its title bar to maximize it.</p>
+    <p>Pull down your phone's notification shade, tap the Termux:X11 notification's preferences, and set:</p>
+    <p class="small-note"><strong>Output</strong> &rarr; Scaled (fits Phosh to your screen size) &nbsp;&middot;&nbsp; <strong>Pointer</strong> &rarr; Direct Touch (makes your screen taps register as touch, not a mouse cursor)</p>
+    <div class="callout">
+      <strong>If Phosh doesn't come up, or only worked once:</strong> this is a known, currently-unresolved issue with this setup, not something you did wrong. Killing the <code>cage</code> process and re-running step 10.5 is the usual first thing to try.
+    </div>
+  </section>
+
+  <footer>
+    Adapted from <a href="https://ivonblog.com/en-us/posts/postmarketos-in-termux-proot/" target="_blank" rel="noopener">Ivon Huang's original guide</a> (CC BY-SA 4.0). This page is a static HTML file &mdash; host it anywhere: a folder served by <code>python3 -m http.server</code>, GitHub Pages, Netlify, or just open the file directly in a browser.
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.getAttribute('data-copy');
+      navigator.clipboard.writeText(text).then(function () {
+        var original = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1400);
+      }).catch(function () {
+        btn.textContent = 'Select & copy manually';
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
