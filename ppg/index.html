@@ -526,6 +526,36 @@ font-noto-emoji</pre>
       <button class="copy-btn">Copy</button>
     </div>
     <p class="small-note">This is a large install &mdash; give it time on a slower connection.</p>
+
+    <h3 style="font-size:17px;margin:30px 0 6px">Work around the image-loader sandbox</h3>
+    <p>Without this, Phosh starts, runs for a few seconds and then aborts. The chain is worth understanding, because nothing in the error message points at the cause:</p>
+    <p class="small-note">GTK draws its icons from SVG files &rarr; on Alpine, SVG decoding is handled by <strong>glycin</strong>, which runs every decode in a <strong>bubblewrap</strong> sandbox &rarr; bubblewrap needs unprivileged user namespaces &rarr; proot cannot provide those, so <code>bwrap</code> exits immediately &rarr; GTK treats a failed icon load as a fatal assertion and calls <code>abort()</code>. The compositor then follows its session out, and your window closes.</p>
+    <p>There is no setting for this: the shipped <code>libglycin</code> exposes only <code>GLYCIN_DATA_DIR</code> and <code>GLYCIN_SECCOMP_DEFAULT_ACTION</code>, neither of which turns the sandbox off. What does work is putting a stand-in for <code>bwrap</code> earlier in <code>PATH</code>, which runs the image loader directly instead of under a sandbox that cannot start:</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>sudo tee /usr/local/bin/bwrap &gt;/dev/null &lt;&lt;'EOF'
+#!/bin/sh
+while [ $# -gt 0 ]; do
+  case "$1" in
+    */glycin-loaders/*) exec "$@" ;;
+  esac
+  shift
+done
+echo "bwrap shim: refusing unrecognised command" &gt;&amp;2
+exit 1
+EOF
+sudo chmod +x /usr/local/bin/bwrap</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p>Check that it is the one being found. This must print <code>/usr/local/bin/bwrap</code>, not <code>/usr/bin/bwrap</code>:</p>
+    <div class="codebox">
+      <span class="label">inside alpine</span>
+      <pre>command -v bwrap</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <div class="callout">
+      <strong>Understand what this trades away.</strong> glycin sandboxes image decoding because image parsers are a classic place for memory-safety bugs, and a malicious image is an easy thing to be handed. This shim removes that sandbox for glycin's loaders, so anything that decodes an image in this container &mdash; a web page in Firefox included &mdash; does so unsandboxed. It walks past <code>bwrap</code>'s own arguments and will only run a binary under <code>glycin-loaders/</code>, refusing anything else, which keeps it from becoming a general sandbox bypass. It does not touch the packaged <code>/usr/bin/bwrap</code>; delete <code>/usr/local/bin/bwrap</code> to undo it.
+    </div>
   </section>
 
   <section class="step" id="s10">
@@ -606,11 +636,23 @@ Disabling DMA-BUF support
 drmGetDevices2 failed: Permission denied
 Creating pixman renderer
 Failed to create wlr_drm_lease_manager_v1
-X11 error: op 18:0, code 5</pre>
+X11 error: op 18:0, code 5
+Linux dmabuf support unavailable
+Output 'WL-1' has invalid physical size, using default scale
+g_local_file_query_exists: faccessat doesn't support supplied flags
+Metadata file '...' does not exist
+PolKit failed to properly get our session: No session for pid
+Auth agent failed to register: No session for pid
+Failed to connect to sensor-proxy
+Got no sensor-proxy, no automatic rotation
+Failed to load background image: ...adwaita-timed.xml</pre>
       <button class="copy-btn">Copy</button>
     </div>
     <p class="small-note">They all say the same thing in different words: there is no direct access to the GPU or display hardware from inside an unprivileged container, so rendering falls back to <code>pixman</code>, which draws on the CPU. That is the expected outcome here, and Phosh is still usable at phone resolution. Seeing <code>Mapping input device x11-pointer</code> and <code>x11-touch</code> means input is working.</p>
-    <p class="small-note">The line that actually matters is anything ending in the compositor exiting &mdash; for example <code>phoc-WARNING **: Unknown option</code>, which means a flag in your launch command is wrong and <code>phoc</code> quit before starting.</p>
+    <p class="small-note">The dozens of <code>Metadata file ... does not exist</code> lines are Phosh looking for desktop files belonging to GNOME components this container does not have; they scroll for pages and mean nothing. <code>faccessat doesn't support supplied flags</code> is proot emulating a syscall imperfectly. The PolKit and sensor-proxy lines mean no login session and no rotation sensor, neither of which stops Phosh.</p>
+    <p class="small-note">The lines that actually matter are the ones that end in something exiting:<br>
+    &middot; <code>phoc-WARNING **: Unknown option</code> &mdash; a flag in your launch command is wrong and <code>phoc</code> quit before starting.<br>
+    &middot; <code>Gtk:ERROR ... ensure_surface_for_gicon</code> followed by <code>Bail out!</code> and <code>killed by signal 6</code> &mdash; the image-loader sandbox problem. Go back to step 9 and install the <code>bwrap</code> shim.</p>
 
     <p><strong>A window opens, loads for a while, then closes.</strong> That means <code>phoc</code> started and Phosh itself exited; <code>phoc</code> returns its session's exit status, so it follows the shell out. To capture why, run the launch command in the foreground and tee it to a file:</p>
     <div class="codebox">
