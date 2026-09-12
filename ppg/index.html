@@ -343,7 +343,7 @@ pkg update
 pkg install termux-x11-nightly virglrenderer-android</pre>
       <button class="copy-btn">Copy</button>
     </div>
-    <p class="small-note"><code>termux-x11-nightly</code> provides the <code>termux-x11</code> command used in step 10.2. <code>virglrenderer-android</code> provides <code>virgl_test_server_android</code> used in step 10.3 &mdash; it routes the container's OpenGL calls to your phone's GPU. Treat it as required, not optional: Phosh is a compositor, and without it everything renders in software on the CPU.</p>
+    <p class="small-note"><code>termux-x11-nightly</code> provides the <code>termux-x11</code> command used in step 10.2. <code>virglrenderer-android</code> provides <code>virgl_test_server_android</code> used in step 10.3, which offers the container a path to the GPU for OpenGL. Install it &mdash; step 10.3 fails without it &mdash; but do not expect hardware acceleration of the desktop itself: the compositor cannot get a DRM file descriptor through the X server and falls back to CPU rendering regardless. Individual GL applications inside the session may still benefit.</p>
   </section>
 
   <section class="step" id="s2">
@@ -570,9 +570,13 @@ termux-x11 :0 &</pre>
       <pre>export DISPLAY=:0
 export XDG_RUNTIME_DIR=/tmp
 openbox &
-cage phoc -E '/usr/libexec/phosh' -U &</pre>
+cage -- phoc -S -C /usr/share/phosh/phoc.ini -E /usr/libexec/phosh &</pre>
       <button class="copy-btn">Copy</button>
     </div>
+    <div class="callout">
+      <strong>This command differs from the original guide.</strong> The guide ends it with <code>-U</code>, which <code>phoc</code> does not accept &mdash; and an unrecognised option makes <code>phoc</code> print <code>Unknown option -U</code> and exit immediately, so Phosh never starts. The flags above are the ones upstream's own <code>phosh-session</code> script uses: <code>-S</code> puts <code>phoc</code> in shell mode so Phosh can attach to it, and <code>-C</code> points at the config file that ships with the <code>phosh</code> package. The <code>--</code> makes explicit that everything after it is for <code>phoc</code>, not for <code>cage</code>.
+    </div>
+    <p class="small-note">Do not substitute <code>phosh-session</code> for this command, even though that is the normal way to start Phosh on real hardware. It forces <code>WLR_BACKENDS=drm,libinput</code>, which needs direct access to the display and input hardware &mdash; exactly what an unprivileged proot container does not have.</p>
   </section>
 
   <section class="step" id="s11">
@@ -584,6 +588,22 @@ cage phoc -E '/usr/libexec/phosh' -U &</pre>
     <div class="callout">
       <strong>If Phosh doesn't come up, or only worked once:</strong> this is a known, currently-unresolved issue with this setup, not something you did wrong. Killing the <code>cage</code> process and re-running step 10.5 is the usual first thing to try.
     </div>
+
+    <h2 style="margin-top:34px">Reading the startup log</h2>
+    <p>Step 10.5 prints a wall of warnings even when it works. These lines are all expected in a proot container and are <strong>not</strong> why something failed:</p>
+    <div class="codebox">
+      <span class="label">harmless</span>
+      <pre>Failed to open DRI3
+Failed to query DRI3 DRM FD
+Disabling DMA-BUF support
+drmGetDevices2 failed: Permission denied
+Creating pixman renderer
+Failed to create wlr_drm_lease_manager_v1
+X11 error: op 18:0, code 5</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p class="small-note">They all say the same thing in different words: there is no direct access to the GPU or display hardware from inside an unprivileged container, so rendering falls back to <code>pixman</code>, which draws on the CPU. That is the expected outcome here, and Phosh is still usable at phone resolution. Seeing <code>Mapping input device x11-pointer</code> and <code>x11-touch</code> means input is working.</p>
+    <p class="small-note">The line that actually matters is anything ending in the compositor exiting &mdash; for example <code>phoc-WARNING **: Unknown option</code>, which means a flag in your launch command is wrong and <code>phoc</code> quit before starting.</p>
   </section>
 
   <footer>
