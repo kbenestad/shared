@@ -137,14 +137,14 @@
 <div class="wrap">
 
   <div class="callout">
-    <strong>What this actually is.</strong> A Debian userland running under <code>proot</code> &mdash; an unprivileged emulation layer &mdash; drawing onto an X server that runs as an ordinary Android app. It is a real Debian with real <code>apt</code>, and it is genuinely useful for desktop applications on the move. It is <em>not</em> a phone operating system, and it has no access to your GPU: everything draws on the CPU. Expect a capable, slightly slow desktop, not a replacement for a laptop.
+    <strong>What this actually is.</strong> A Debian userland running under <code>proot</code> &mdash; an unprivileged emulation layer &mdash; drawing onto an X server that runs as an ordinary Android app. It is a real Debian with real <code>apt</code>, and it is genuinely useful for desktop applications on the move. It is <em>not</em> a phone operating system, and as set up here everything draws on the CPU. Expect a capable, slightly slow desktop, not a replacement for a laptop.
   </div>
 
   <table class="facts">
     <tr><td>Works without root</td><td class="yes">Yes</td></tr>
     <tr><td>Survives reboots</td><td class="yes">Yes &mdash; installed once, started with one command</td></tr>
     <tr><td>Real Debian packages</td><td class="yes">Yes &mdash; anything in <code>apt</code></td></tr>
-    <tr><td>Hardware graphics acceleration</td><td class="no">No &mdash; software rendering only</td></tr>
+    <tr><td>Hardware graphics acceleration</td><td class="no">Not set up here</td></tr>
     <tr><td>Disk needed</td><td>About 2&ndash;4&nbsp;GB</td></tr>
     <tr><td>Time to set up</td><td>20&ndash;40 minutes, mostly downloading</td></tr>
   </table>
@@ -412,7 +412,9 @@ pkill -f termux-x11</pre>
     <p>A running desktop prints a great deal of noise &mdash; missing metadata files, D-Bus messages, complaints about sensors and power management that a phone container does not have. None of it means anything is wrong. The only messages worth reading are ones followed by the desktop actually disappearing.</p>
 
     <div class="callout">
-      <strong>Things that will not work, no matter what you try.</strong> There is no access to your GPU, so everything renders on the CPU. There is no access to raw input devices, so multi-touch gesture tools such as <code>touchegg</code> cannot function. There is no real init system, so anything expecting <code>systemd</code> will not start. These are consequences of running unprivileged on a locked phone, not of anything you have done wrong, and no amount of configuration changes them.
+      <strong>Things that will not work here.</strong> There is no access to raw input devices, so multi-touch gesture tools such as <code>touchegg</code> cannot function. There is no real init system, so anything expecting <code>systemd</code> will not start. Both are consequences of running unprivileged in a container, not of anything you have done wrong, and no amount of configuration changes them.
+      <br><br>
+      Graphics are a different case. This guide renders on the CPU, which is why step 7 turns compositing off. That is a choice made for reliability, not a hard limit: on a Qualcomm device the GPU <em>is</em> reachable without root, through Mesa's Turnip Vulkan driver &mdash; it talks to <code>/dev/kgsl</code>, which an ordinary app may open, rather than <code>/dev/dri</code>, which it may not. Termux packages it as <code>mesa-vulkan-icd-freedreno</code>, with <code>virglrenderer-android</code> to carry it into a container. Setting that up is beyond this page, and the desktop does not need it, but do not let anyone tell you the GPU is simply off-limits.
     </div>
   </section>
 
