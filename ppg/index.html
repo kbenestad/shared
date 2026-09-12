@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>postmarketOS + Phosh in Termux</title>
+<title>Termux Debian Desktop</title>
 <style>
   :root {
     --ink: #1c2321;
@@ -14,7 +14,6 @@
     --accent-dim: #6b8f71;
     --code-bg: #21261f;
     --code-text: #dfe8d8;
-    --code-comment: #7c9c7f;
     --warn: #9c4221;
     --warn-bg: #fbeee7;
   }
@@ -28,12 +27,11 @@
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 640px; margin: 0 auto; padding: 0 18px 80px; }
+  .wrap { max-width: 660px; margin: 0 auto; padding: 0 18px 80px; }
 
   header.hero {
     padding: 48px 18px 30px;
     border-bottom: 1px solid var(--rule);
-    margin-bottom: 8px;
   }
   header.hero .wrap { padding: 0; }
   .kicker {
@@ -43,26 +41,8 @@
     color: var(--accent-dim);
     margin: 0 0 10px;
   }
-  h1 {
-    font-size: 34px;
-    line-height: 1.15;
-    margin: 0 0 14px;
-    font-weight: 600;
-    max-width: 22ch;
-  }
-  .dek {
-    font-size: 17px;
-    color: #4a4f45;
-    max-width: 46ch;
-    margin: 0;
-  }
-  .meta-row {
-    margin-top: 22px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 13px;
-    color: #6b6f63;
-  }
-  .meta-row a { color: var(--accent); }
+  h1 { font-size: 34px; line-height: 1.15; margin: 0 0 14px; font-weight: 600; max-width: 22ch; }
+  .dek { font-size: 17px; color: #4a4f45; max-width: 48ch; margin: 0; }
 
   nav.toc {
     background: var(--panel);
@@ -72,196 +52,75 @@
     margin: 28px 0 40px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
-  nav.toc p {
-    margin: 0 0 10px;
-    font-size: 12px;
-    letter-spacing: 0.03em;
-    color: var(--accent-dim);
-  }
+  nav.toc p { margin: 0 0 10px; font-size: 12px; letter-spacing: 0.03em; color: var(--accent-dim); }
   nav.toc ol { margin: 0; padding-left: 20px; font-size: 14.5px; }
   nav.toc li { margin-bottom: 6px; }
   nav.toc a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
   nav.toc a:hover { border-color: var(--accent); }
 
-  section.step {
-    margin-bottom: 46px;
-    scroll-margin-top: 18px;
-  }
-  .step-head {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    margin-bottom: 6px;
-  }
+  section.step { margin-bottom: 46px; scroll-margin-top: 18px; }
+  .step-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
   .step-num {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 13px;
-    color: var(--accent-dim);
-    white-space: nowrap;
+    font-size: 13px; color: var(--accent-dim); white-space: nowrap;
   }
-  h2 {
-    font-size: 21px;
-    margin: 0;
-    font-weight: 600;
-  }
+  h2 { font-size: 21px; margin: 0; font-weight: 600; }
+  h3 { font-size: 17px; margin: 30px 0 6px; font-weight: 600; }
   .step p { font-size: 16px; }
-  .step p.small-note {
+  .small-note {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 14px;
-    color: #5a5f52;
-    background: #edeadf;
+    font-size: 14px; color: #5a5f52; background: #edeadf;
     border-left: 3px solid var(--accent-dim);
-    padding: 10px 14px;
-    border-radius: 0 4px 4px 0;
+    padding: 10px 14px; border-radius: 0 4px 4px 0;
   }
 
   .callout {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 14.5px;
-    background: var(--warn-bg);
-    border-left: 3px solid var(--warn);
-    color: #5c2c14;
-    padding: 12px 16px;
-    border-radius: 0 4px 4px 0;
-    margin: 14px 0;
+    font-size: 14.5px; background: var(--warn-bg);
+    border-left: 3px solid var(--warn); color: #5c2c14;
+    padding: 12px 16px; border-radius: 0 4px 4px 0; margin: 14px 0;
   }
   .callout strong { color: var(--warn); }
 
-  .codebox {
-    position: relative;
-    background: var(--code-bg);
-    border-radius: 6px;
-    margin: 14px 0;
-    overflow: hidden;
-  }
+  .codebox { position: relative; background: var(--code-bg); border-radius: 6px; margin: 14px 0; overflow: hidden; }
   .codebox .label {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 11.5px;
-    color: #93a68d;
-    padding: 9px 14px 0;
-    display: block;
+    font-size: 11.5px; color: #93a68d; padding: 9px 14px 0; display: block;
   }
   .codebox pre {
-    margin: 0;
-    padding: 10px 14px 14px;
-    overflow-x: auto;
+    margin: 0; padding: 10px 14px 14px; overflow-x: auto;
     font-family: "SF Mono", "Menlo", "Consolas", monospace;
-    font-size: 13.5px;
-    color: var(--code-text);
-    white-space: pre;
+    font-size: 13.5px; color: var(--code-text); white-space: pre;
   }
-  .codebox .cm { color: var(--code-comment); }
   .copy-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
+    position: absolute; top: 8px; right: 8px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 12px;
-    background: #33392f;
-    color: #dfe8d8;
-    border: 1px solid #454c3d;
-    border-radius: 4px;
-    padding: 5px 10px;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+    font-size: 12px; background: #33392f; color: #dfe8d8;
+    border: 1px solid #454c3d; border-radius: 4px; padding: 5px 10px;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
   .copy-btn:active { transform: scale(0.96); }
   .copy-btn.copied { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-  .editor-tabs {
-    display: flex;
-    gap: 8px;
-    margin: 16px 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  table.facts {
+    width: 100%; border-collapse: collapse; margin: 16px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px;
   }
-  .editor-card {
-    flex: 1;
-    background: var(--panel);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 14px;
-  }
-  .editor-card h3 {
-    font-size: 13px;
-    margin: 0 0 8px;
-    color: var(--accent);
-  }
-  .editor-card ol {
-    margin: 0;
-    padding-left: 18px;
-    font-size: 13.5px;
-    color: #3a3f35;
-  }
-  .editor-card li { margin-bottom: 5px; }
-  .editor-card kbd {
-    font-family: "SF Mono", monospace;
-    background: #ece8dc;
-    border: 1px solid var(--rule);
-    border-radius: 3px;
-    padding: 1px 5px;
-    font-size: 12px;
-  }
+  table.facts td { padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  table.facts td:first-child { width: 42%; color: #5a5f52; }
+  .yes { color: var(--accent); font-weight: 600; }
+  .no { color: var(--warn); font-weight: 600; }
 
   footer {
-    margin-top: 60px;
-    padding-top: 20px;
-    border-top: 1px solid var(--rule);
+    margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--rule);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 13px;
-    color: #6b6f63;
+    font-size: 13px; color: #6b6f63;
   }
   footer a { color: var(--accent); }
-
-
-  .version-panel {
-    background: var(--panel);
-    border: 1px solid var(--accent-dim);
-    border-radius: 4px;
-    padding: 18px 20px;
-    margin: 28px 0 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-  .version-panel .vp-title {
-    margin: 0 0 6px;
-    font-size: 12px;
-    letter-spacing: 0.03em;
-    color: var(--accent);
-    font-weight: 600;
-  }
-  .version-panel .vp-note {
-    margin: 0 0 14px;
-    font-size: 13.5px;
-    color: #5a5f52;
-    line-height: 1.45;
-  }
-  .version-panel .vp-note a { color: var(--accent); }
-  .vp-fields { display: flex; gap: 14px; flex-wrap: wrap; }
-  .vp-fields label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 12px;
-    color: #5a5f52;
-    flex: 1;
-    min-width: 130px;
-  }
-  .vp-fields input {
-    font-family: "SF Mono", "Menlo", "Consolas", monospace;
-    font-size: 15px;
-    color: var(--ink);
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    padding: 8px 10px;
-    width: 100%;
-  }
-  .vp-fields input:focus { outline: 2px solid var(--accent-dim); outline-offset: -1px; }
 
   @media (max-width: 480px) {
     h1 { font-size: 28px; }
     header.hero { padding: 36px 18px 24px; }
-    .editor-tabs { flex-direction: column; }
-    .vp-fields { flex-direction: column; }
   }
 </style>
 </head>
@@ -269,428 +128,301 @@
 
 <header class="hero">
   <div class="wrap">
-    <p class="kicker">TERMUX &middot; PROOT &middot; ALPINE &middot; POSTMARKETOS</p>
-    <h1>Phosh on your phone, without flashing anything</h1>
-    <p class="dek">A step-by-step build of postmarketOS's Phosh interface inside a Termux proot container &mdash; adapted from Ivon Huang's guide, with the gaps filled in.</p>
-    <p class="meta-row">Base guide: <a href="https://ivonblog.com/en-us/posts/postmarketos-in-termux-proot/" target="_blank" rel="noopener">ivonblog.com</a> &middot; This version fills in the missing <code>visudo</code> and editor-save steps.</p>
+    <p class="kicker">TERMUX &middot; PROOT &middot; DEBIAN &middot; XFCE</p>
+    <h1>A Debian desktop on your Android phone</h1>
+    <p class="dek">Start to finish, from a freshly installed Termux. No root, no unlocked bootloader, nothing flashed. Copy each block in order and you get a working XFCE desktop with real desktop applications.</p>
   </div>
 </header>
 
 <div class="wrap">
 
-  <div class="version-panel">
-    <p class="vp-title">SET YOUR VERSIONS</p>
-    <p class="vp-note">Every command, URL and config file below rewrites itself to match &mdash; including what the Copy buttons put on your clipboard. The two versions are <strong>not independent</strong>: each postmarketOS release is built against one specific Alpine release, and mixing them will make <code>apk</code> fail to resolve packages. The current pairing is listed in postmarketOS's own <a href="https://gitlab.postmarketos.org/postmarketOS/pmaports/-/raw/main/channels.cfg" target="_blank" rel="noopener">channels.cfg</a> &mdash; find your release and use its <code>mirrordir_alpine</code> value as the Alpine version.</p>
-    <div class="vp-fields">
-      <label>postmarketOS release
-        <input id="in-pmos" type="text" value="v26.06" spellcheck="false" autocapitalize="off" autocorrect="off">
-      </label>
-      <label>Alpine version
-        <input id="in-alpine" type="text" value="v3.24" spellcheck="false" autocapitalize="off" autocorrect="off">
-      </label>
-    </div>
+  <div class="callout">
+    <strong>What this actually is.</strong> A Debian userland running under <code>proot</code> &mdash; an unprivileged emulation layer &mdash; drawing onto an X server that runs as an ordinary Android app. It is a real Debian with real <code>apt</code>, and it is genuinely useful for desktop applications on the move. It is <em>not</em> a phone operating system, and it has no access to your GPU: everything draws on the CPU. Expect a capable, slightly slow desktop, not a replacement for a laptop.
   </div>
 
-  <div class="callout">
-    <strong>Read this first.</strong> This is not real postmarketOS &mdash; it's Alpine Linux running in an unprivileged proot container, converted to use pmOS repositories and packages. There's no direct hardware access, no kernel-level power management, and Phosh is a Wayland compositor nested awkwardly inside X11. Expect roughness: the source guide itself notes Phosh may only launch reliably once or twice per session.
-  </div>
+  <table class="facts">
+    <tr><td>Works without root</td><td class="yes">Yes</td></tr>
+    <tr><td>Survives reboots</td><td class="yes">Yes &mdash; installed once, started with one command</td></tr>
+    <tr><td>Real Debian packages</td><td class="yes">Yes &mdash; anything in <code>apt</code></td></tr>
+    <tr><td>Hardware graphics acceleration</td><td class="no">No &mdash; software rendering only</td></tr>
+    <tr><td>Disk needed</td><td>About 2&ndash;4&nbsp;GB</td></tr>
+    <tr><td>Time to set up</td><td>20&ndash;40 minutes, mostly downloading</td></tr>
+  </table>
 
   <nav class="toc">
     <p>ON THIS PAGE</p>
     <ol>
-      <li><a href="#prereqs">Prerequisites</a></li>
-      <li><a href="#s1">1. Install proot Alpine</a></li>
-      <li><a href="#s2">2. Switch Alpine to <span data-v="alpine">v3.24</span></a></li>
-      <li><a href="#s3">3. Create a user &amp; grant sudo</a></li>
-      <li><a href="#s4">4. Set the timezone</a></li>
-      <li><a href="#s5">5. (Optional) Enable SSH</a></li>
-      <li><a href="#s6">6. Add the postmarketOS repo</a></li>
-      <li><a href="#s7">7. Install postmarketOS keys</a></li>
-      <li><a href="#s8">8. Set os-release identity</a></li>
-      <li><a href="#s9">9. Install Openbox, Cage, Phosh</a></li>
-      <li><a href="#s10">10. Launch everything</a></li>
-      <li><a href="#s11">11. Fit it to your screen</a></li>
+      <li><a href="#s0">Before you start</a></li>
+      <li><a href="#s1">1. Set up Termux</a></li>
+      <li><a href="#s2">2. Install the X server and sound</a></li>
+      <li><a href="#s3">3. Install Debian</a></li>
+      <li><a href="#s4">4. Install the XFCE desktop</a></li>
+      <li><a href="#s5">5. Make one command that starts everything</a></li>
+      <li><a href="#s6">6. First launch</a></li>
+      <li><a href="#s7">7. Make it usable with fingers</a></li>
+      <li><a href="#s8">8. Day-to-day use</a></li>
+      <li><a href="#s9">9. When something goes wrong</a></li>
     </ol>
   </nav>
 
-  <section class="step" id="prereqs">
+  <section class="step" id="s0">
     <div class="step-head"><span class="step-num">BEFORE YOU START</span></div>
-    <h2>Prerequisites</h2>
-    <p>Install these Android apps from F-Droid or their official sources first &mdash; not the Play Store versions, which are outdated:</p>
-    <p class="small-note">Termux &middot; Termux:X11 &middot; Hacker's Keyboard, for a real keyboard layout when typing into the desktop.</p>
+    <h2>Two apps, and not from the Play Store</h2>
+    <p>You need two Android apps. <strong>Do not install either from the Play Store</strong> &mdash; those builds are years out of date and will not work with these instructions. Get both from <a href="https://f-droid.org/" target="_blank" rel="noopener">F-Droid</a> or from each project's own GitHub releases page:</p>
+    <p class="small-note"><strong>Termux</strong> &mdash; the terminal everything runs in.<br>
+    <strong>Termux:X11</strong> &mdash; the window your desktop appears in.</p>
+    <p>A third is optional but makes life much easier: <strong>Hacker's Keyboard</strong>, which gives you Ctrl, Tab, Escape and arrow keys. You will want those.</p>
     <div class="callout">
-      <strong>Termux:X11 is two separate pieces.</strong> The app you just installed is only the X server &mdash; the window that eventually displays the desktop. The <code>termux-x11</code> <em>command</em> that talks to it lives in a separate Termux package, which is not installed by default and does not come from Termux's standard repository. Step 1 installs it. Miss this and step 10.2 fails with <code>termux-x11: command not found</code>.
+      <strong>Install both apps from the same source.</strong> Termux and Termux:X11 have to be signed by the same key to talk to each other. Two from F-Droid, or two from GitHub &mdash; never one of each. This is the single most common reason a setup fails at the last step.
     </div>
   </section>
 
   <section class="step" id="s1">
     <div class="step-head"><span class="step-num">STEP 1</span></div>
-    <h2>Install proot Alpine Linux</h2>
-    <p>Run these in Termux, one line at a time:</p>
+    <h2>Set up Termux</h2>
+    <p>Open Termux. Everything in this step is typed there. First bring it up to date &mdash; this alone can take a few minutes:</p>
     <div class="codebox">
       <span class="label">termux</span>
-      <pre>pkg update
-pkg install proot-distro pulseaudio
-proot-distro install alpine</pre>
+      <pre>pkg upgrade -y</pre>
       <button class="copy-btn">Copy</button>
     </div>
-
-    <p>Now add the X11 packages. These are <strong>not</strong> in Termux's default repository &mdash; <code>x11-repo</code> is a small package whose only job is to register that extra repository, so it has to go in first and be followed by a <code>pkg update</code> before the other two are visible:</p>
+    <p class="small-note">If it asks about replacing configuration files, pressing Enter to accept the default is fine.</p>
+    <p>Now give Termux permission to reach your phone's own files. Android will pop up a permission dialog &mdash; allow it:</p>
     <div class="codebox">
       <span class="label">termux</span>
-      <pre>pkg install x11-repo
-pkg update
-pkg install termux-x11-nightly virglrenderer-android</pre>
+      <pre>termux-setup-storage</pre>
       <button class="copy-btn">Copy</button>
     </div>
-    <p class="small-note"><code>termux-x11-nightly</code> provides the <code>termux-x11</code> command used in step 10.2. <code>virglrenderer-android</code> provides <code>virgl_test_server_android</code> used in step 10.3, which offers the container a path to the GPU for OpenGL. Install it &mdash; step 10.3 fails without it &mdash; but do not expect hardware acceleration of the desktop itself: the compositor cannot get a DRM file descriptor through the X server and falls back to CPU rendering regardless. Individual GL applications inside the session may still benefit.</p>
+    <p class="small-note">Skip this and your Downloads, Photos and Documents folders will not be visible from the desktop later.</p>
   </section>
 
   <section class="step" id="s2">
     <div class="step-head"><span class="step-num">STEP 2</span></div>
-    <h2>Switch Alpine's repo from Edge to <span data-v="alpine">v3.24</span></h2>
-    <p>Edge is Alpine's rolling/unstable branch. Log in and edit the repo file:</p>
+    <h2>Install the X server and sound</h2>
+    <p>The X11 packages live in a separate repository that is not enabled by default. <code>x11-repo</code> is a tiny package whose only job is to switch that repository on, so it has to go in first and be followed by an update before anything else becomes visible:</p>
     <div class="codebox">
       <span class="label">termux</span>
-      <pre>proot-distro login alpine --shared-tmp
-apk update
-apk add nano</pre>
+      <pre>pkg install -y x11-repo
+pkg update</pre>
       <button class="copy-btn">Copy</button>
     </div>
-    <p>Then open the repo file:</p>
+    <p>Now the rest:</p>
     <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>nano /etc/apk/repositories</pre>
+      <span class="label">termux</span>
+      <pre>pkg install -y termux-x11-nightly pulseaudio proot-distro</pre>
       <button class="copy-btn">Copy</button>
     </div>
-    <p>Inside nano: use the arrow keys to edit directly (no mode switching needed), change every line that says <code>edge</code> to <code><span data-v="alpine">v3.24</span></code> (e.g. <code>.../alpine/edge/main</code> &rarr; <code>.../alpine/<span data-v="alpine">v3.24</span>/main</code>), then press <kbd>Ctrl+O</kbd> then Enter to save, and <kbd>Ctrl+X</kbd> to exit.</p>
-    <p>Now update:</p>
-    <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>apk update
-apk upgrade</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
+    <p class="small-note"><code>termux-x11-nightly</code> is the command that talks to the Termux:X11 app you installed &mdash; the app on its own is not enough. <code>pulseaudio</code> carries sound out of the container. <code>proot-distro</code> installs and runs Debian.</p>
   </section>
 
   <section class="step" id="s3">
     <div class="step-head"><span class="step-num">STEP 3</span></div>
-    <h2>Create a user and grant sudo access</h2>
-    <p>Create the account:</p>
+    <h2>Install Debian</h2>
     <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>apk add sudo
-addgroup storage
-adduser -g wheel,storage,video,audio user</pre>
+      <span class="label">termux</span>
+      <pre>proot-distro install debian:trixie</pre>
       <button class="copy-btn">Copy</button>
     </div>
-    <p>You'll be prompted to set a password for <code>user</code> &mdash; type one and confirm it.</p>
-
-    <div class="callout">
-      <strong>The gap in the original guide:</strong> it tells you to run <code>visudo</code> but never says what to type. Here's exactly what goes in the file and how to save it.
-    </div>
-
-    <p><code>visudo</code> opens whatever editor the <code>EDITOR</code> variable points to &mdash; on Alpine that's vi by default, not nano. Install nano and point <code>visudo</code> at it first:</p>
-    <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>apk add nano
-export EDITOR=nano
-visudo</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-    <p>This opens <code>/etc/sudoers</code> in nano. Add this line at the <strong>very bottom</strong> of the file &mdash; it lets your new user run <code>sudo</code> without typing a password every time, since this container only you can access:</p>
-    <div class="codebox">
-      <span class="label">add to sudoers</span>
-      <pre>user ALL=(ALL) NOPASSWD: ALL</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-    <p class="small-note">Prefer to keep a password prompt on <code>sudo</code>? Use <code>user ALL=(ALL) ALL</code> instead. Either works with the rest of this guide &mdash; the passwordless version is just less friction inside a container nobody else can reach.</p>
-    <div class="editor-card" style="margin: 16px 0;">
-      <h3>SAVING IN NANO</h3>
-      <ol>
-        <li>Use arrow keys to reach the last line</li>
-        <li>Type the sudoers line above</li>
-        <li>Press <kbd>Ctrl+O</kbd> then Enter to write out</li>
-        <li>Press <kbd>Ctrl+X</kbd> to exit</li>
-      </ol>
-    </div>
-    <p class="small-note">The <code>export EDITOR=nano</code> only lasts for this terminal session. If you open a new Termux session later and run <code>visudo</code> again, you'll need to set it again first &mdash; or it'll fall back to vi.</p>
+    <p>This downloads a few hundred megabytes. Leave it alone until it finishes.</p>
+    <p class="small-note">The <code>:trixie</code> part pins the Debian release (Debian 13). Without it you get whatever <code>latest</code> points at today, which will silently become a different Debian at some point in the future and quietly invalidate the rest of this page. Pinning costs nothing and means these instructions keep working.</p>
   </section>
 
   <section class="step" id="s4">
     <div class="step-head"><span class="step-num">STEP 4</span></div>
-    <h2>Set the timezone</h2>
-    <p>Replace <code>Asia/Taipei</code> with your own zone if different (list at <code>/usr/share/zoneinfo</code>):</p>
+    <h2>Install the XFCE desktop</h2>
+    <p>Step into Debian. Your prompt changes to show you are inside it:</p>
     <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>sudo ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime
-sudo setup-timezone</pre>
+      <span class="label">termux</span>
+      <pre>proot-distro login debian</pre>
       <button class="copy-btn">Copy</button>
+    </div>
+    <p>Now install the desktop. This is the big download &mdash; several hundred megabytes, and slow on a phone. Start it and go and do something else:</p>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>apt update
+apt install -y xfce4 xfce4-terminal xfce4-whiskermenu-plugin \
+  dbus-x11 librsvg2-common adwaita-icon-theme \
+  fonts-noto-core fonts-dejavu \
+  mousepad xfce4-taskmanager thunar-archive-plugin</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p>Set up a language so applications stop complaining about a missing locale:</p>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>apt install -y locales
+sed -i 's/^# *en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
+locale-gen</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p>Then leave Debian and go back to Termux:</p>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>exit</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <div class="callout">
+      <strong>Why there is no "create a user" step.</strong> Most guides have you add a normal user and set up <code>sudo</code>. Here you stay as root inside the container, deliberately. Root in proot is not root on your phone &mdash; every process still runs as the ordinary, unprivileged Android user that Termux itself runs as, confined to Termux's own sandbox. Adding a user buys you no real isolation, and it adds a <code>sudoers</code> step that is the most common place these setups break. If you later want a normal user for its own sake, you can add one at any time.
     </div>
   </section>
 
   <section class="step" id="s5">
-    <div class="step-head"><span class="step-num">STEP 5 &middot; OPTIONAL</span></div>
-    <h2>Enable SSH into the container</h2>
-    <p>Useful if you'd rather type on a real keyboard over the network. Skip this if you don't need it.</p>
+    <div class="step-head"><span class="step-num">STEP 5</span></div>
+    <h2>Make one command that starts everything</h2>
+    <p>Starting the desktop by hand means five commands in the right order, every time. Instead, write them into a script once. Paste this whole block into <strong>Termux</strong> exactly as it is &mdash; it creates the file and makes it runnable:</p>
     <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>sudo nano /etc/ssh/sshd_config</pre>
+      <span class="label">termux</span>
+      <pre>cat &gt; ~/desktop &lt;&lt;'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+
+# Clear out anything left running from a previous session
+pkill -f termux-x11 &gt;/dev/null 2&gt;&amp;1
+proot-distro kill debian &gt;/dev/null 2&gt;&amp;1
+
+# Sound
+pulseaudio --start --exit-idle-time=-1 &gt;/dev/null 2&gt;&amp;1
+pacmd load-module module-native-protocol-tcp \
+  auth-ip-acl=127.0.0.1 auth-anonymous=1 &gt;/dev/null 2&gt;&amp;1
+
+# X server
+export DISPLAY=:0
+termux-x11 :0 &gt;/dev/null 2&gt;&amp;1 &amp;
+
+# Wait for the X server to actually be ready, rather than guessing
+for i in $(seq 1 20); do
+  [ -e "$TMPDIR/.X11-unix/X0" ] &amp;&amp; break
+  sleep 0.5
+done
+
+# Start the desktop
+proot-distro login debian --shared-tmp --shared-x11 \
+  -e DISPLAY=:0 \
+  -e PULSE_SERVER=127.0.0.1 \
+  -e XDG_RUNTIME_DIR=/tmp \
+  -- dbus-run-session startxfce4
+EOF
+chmod +x ~/desktop</pre>
       <button class="copy-btn">Copy</button>
     </div>
-    <p>Find the line starting with <code>Port</code> and change <code>22</code> to <code>8023</code> (regular Termux, outside proot, may already use port 22). Save with <kbd>Ctrl+O</kbd>, Enter, then exit with <kbd>Ctrl+X</kbd>.</p>
-    <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>ssh-keygen -A
-rc-update add sshd
-rc-service sshd start
-ip addr</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-    <p class="small-note">The last command prints your phone's IP address &mdash; you'll need it to connect. Note: <code>rc-service</code>, not the guide's typo <code>rc-serive</code>.</p>
+    <p class="small-note">From now on, <code>~/desktop</code> is the only command you need. It cleans up after any previous run first, which is what stops the second launch of the day from failing.</p>
   </section>
 
   <section class="step" id="s6">
     <div class="step-head"><span class="step-num">STEP 6</span></div>
-    <h2>Add the postmarketOS repository</h2>
+    <h2>First launch</h2>
     <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>nano /etc/apk/repositories</pre>
+      <span class="label">termux</span>
+      <pre>~/desktop</pre>
       <button class="copy-btn">Copy</button>
     </div>
-    <p>Add this line at the very <strong>top</strong> of the file:</p>
-    <div class="codebox">
-      <span class="label">add to repositories</span>
-      <pre>https://mirror.postmarketos.org/postmarketos/<span data-v="pmos">v26.06</span></pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-    <p class="small-note">This URL uses whatever you typed in the box at the top of the page. If a newer pmOS release has shipped since, change it there once and every step updates.</p>
+    <p>The Termux:X11 app should come to the front by itself. If it does not, open it from your app drawer &mdash; the desktop is already running behind it.</p>
+    <p>The first start is the slowest; XFCE is building its caches. Give it a minute before deciding something is wrong.</p>
+    <h3>Set the display up for a phone</h3>
+    <p>In the Termux:X11 app, pull down your notification shade, tap the Termux:X11 notification, and set:</p>
+    <p class="small-note"><strong>Output</strong> &rarr; Scaled &nbsp;&middot;&nbsp; <strong>Pointer</strong> &rarr; Direct Touch</p>
+    <p>Direct Touch is the important one: it makes your taps land where you touch instead of dragging a mouse cursor around.</p>
   </section>
 
   <section class="step" id="s7">
     <div class="step-head"><span class="step-num">STEP 7</span></div>
-    <h2>Trust postmarketOS's package signing keys</h2>
+    <h2>Make it usable with fingers</h2>
+    <p>Out of the box XFCE is built for a mouse on a large screen, and on a phone the controls are far too small to hit. This fixes that.</p>
+    <p>Open <strong>Terminal inside the XFCE desktop</strong> &mdash; not Termux. These settings are applied through the running desktop session, so they will not work from a Termux prompt. Use the Whisker Menu, or right-click the desktop and choose Open Terminal Here. Then paste:</p>
     <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>apk add -u --allow-untrusted postmarketos-keys
-apk update && apk upgrade</pre>
+      <span class="label">inside the xfce desktop</span>
+      <pre># Size — the single biggest improvement
+xfconf-query -c xsettings -p /Gdk/WindowScalingFactor -n -t int -s 2
+xfconf-query -c xsettings -p /Xft/DPI -n -t int -s 96
+xfconf-query -c xsettings -p /Gtk/CursorThemeSize -n -t int -s 32
+
+# Stop a slightly wobbly tap being read as a drag
+xfconf-query -c xsettings -p /Net/DndDragThreshold -n -t int -s 24
+xfconf-query -c xsettings -p /Net/DoubleClickTime -n -t int -s 500
+
+# Appearance
+xfconf-query -c xsettings -p /Net/IconThemeName -n -t string -s "Adwaita"
+xfconf-query -c xsettings -p /Gtk/DialogsUseHeader -n -t bool -s true
+
+# No compositing: there is no GPU here, and it only costs speed
+xfconf-query -c xfwm4 -p /general/use_compositing -n -t bool -s false
+
+# Title bars you can grab, and only two buttons to mis-tap
+xfconf-query -c xfwm4 -p /general/title_font -n -t string -s "Sans Bold 12"
+xfconf-query -c xfwm4 -p /general/button_layout -n -t string -s "|MC"
+
+# One tap opens a file
+xfconf-query -c thunar -p /misc-single-click -n -t bool -s true
+
+# A panel you can actually hit
+xfconf-query -c xfce4-panel -p /panels/panel-1/size -n -t int -s 48</pre>
       <button class="copy-btn">Copy</button>
     </div>
+    <p>Close the desktop and start it again with <code>~/desktop</code> for the scaling to take effect.</p>
+    <p class="small-note">If everything now looks too big, set <code>/Gdk/WindowScalingFactor</code> back to <code>1</code> and raise <code>/Xft/DPI</code> to <code>144</code> instead &mdash; that enlarges text without doubling every control. If the panel line does not take, set it by hand: right-click the panel &rarr; Panel &rarr; Panel Preferences &rarr; Row Size.</p>
+    <h3>Add a searchable menu</h3>
+    <p>The default XFCE menu is a nest of submenus, which is miserable on a touchscreen. Right-click the panel &rarr; Panel &rarr; Add New Items &rarr; <strong>Whisker Menu</strong>. It gives you a search box, which is the part of a modern desktop menu you actually use.</p>
   </section>
 
   <section class="step" id="s8">
     <div class="step-head"><span class="step-num">STEP 8</span></div>
-    <h2>Set the system identity</h2>
-    <p>Open the file:</p>
+    <h2>Day-to-day use</h2>
+    <h3>Starting and stopping</h3>
+    <p>Start it with <code>~/desktop</code> in Termux. To shut it down cleanly, log out from inside XFCE, or from a Termux prompt:</p>
     <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>sudo nano /etc/os-release</pre>
+      <span class="label">termux</span>
+      <pre>proot-distro kill debian
+pkill -f termux-x11</pre>
       <button class="copy-btn">Copy</button>
     </div>
-    <p>Select all existing lines and delete them (in nano: <kbd>Ctrl+Shift+6</kbd> or <kbd>Alt+A</kbd> to start a selection, arrow down to the end, then <kbd>Ctrl+K</kbd> to cut &mdash; or just hold Backspace/Delete until the file is empty), then type in:</p>
+    <p class="small-note">Leaving the desktop running in the background costs battery. Shut it down when you are finished rather than just switching away.</p>
+
+    <h3>Installing applications</h3>
+    <p>Anything in Debian, from a terminal inside the desktop or from <code>proot-distro login debian</code>:</p>
     <div class="codebox">
-      <span class="label">/etc/os-release</span>
-      <pre>PRETTY_NAME="postmarketOS <span data-v="pmos">v26.06</span>"
-NAME="postmarketOS"
-VERSION_ID="<span data-v="pmos">v26.06</span>"
-VERSION="<span data-v="pmos">v26.06</span>"
-ID="postmarketos"
-ID_LIKE="alpine"
-HOME_URL="https://www.postmarketos.org/"
-SUPPORT_URL="https://gitlab.com/postmarketOS"
-BUG_REPORT_URL="https://gitlab.com/postmarketOS/pmaports/issues"
-LOGO="postmarketos-logo"</pre>
+      <span class="label">inside debian</span>
+      <pre>apt install -y firefox-esr</pre>
       <button class="copy-btn">Copy</button>
     </div>
-    <p>Then save with <kbd>Ctrl+O</kbd>, Enter, and exit with <kbd>Ctrl+X</kbd>.</p>
+    <p class="small-note">Heavy applications will run, slowly. A browser and an office suite are usable for real work; video editing and 3D are not, because there is no GPU here.</p>
+
+    <h3>Your phone's files</h3>
+    <p>Your Android storage is visible inside the desktop at <code>/sdcard</code>. Open Thunar and type that path to reach Downloads, Documents and Pictures &mdash; files you save there are visible to your normal Android apps, and vice versa.</p>
+
+    <h3>Typing</h3>
+    <p>Use your normal Android keyboard; it types into the desktop. Hacker's Keyboard is worth switching to whenever you need Ctrl, Esc, Tab or arrow keys, which is most of the time in a desktop application.</p>
   </section>
 
   <section class="step" id="s9">
     <div class="step-head"><span class="step-num">STEP 9</span></div>
-    <h2>Install Openbox, Cage, and Phosh</h2>
-    <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>sudo apk add openbox cage dbus</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-    <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>sudo apk add postmarketos-ui-phosh \
-postmarketos-tweaks \
-firefox \
-mobile-config-firefox \
-font-noto \
-font-noto-cjk \
-font-noto-cjk-extra \
-font-noto-emoji</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-    <p class="small-note">This is a large install &mdash; give it time on a slower connection.</p>
+    <h2>When something goes wrong</h2>
 
-    <h3 style="font-size:17px;margin:30px 0 6px">Work around the image-loader sandbox</h3>
-    <p>Without this, Phosh starts, runs for a few seconds and then aborts. The chain is worth understanding, because nothing in the error message points at the cause:</p>
-    <p class="small-note">GTK draws its icons from SVG files &rarr; on Alpine, SVG decoding is handled by <strong>glycin</strong>, which runs every decode in a <strong>bubblewrap</strong> sandbox &rarr; bubblewrap needs unprivileged user namespaces &rarr; proot cannot provide those, so <code>bwrap</code> exits immediately &rarr; GTK treats a failed icon load as a fatal assertion and calls <code>abort()</code>. The compositor then follows its session out, and your window closes.</p>
-    <p>There is no setting for this: the shipped <code>libglycin</code> exposes only <code>GLYCIN_DATA_DIR</code> and <code>GLYCIN_SECCOMP_DEFAULT_ACTION</code>, neither of which turns the sandbox off. What does work is putting a stand-in for <code>bwrap</code> earlier in <code>PATH</code>, which runs the image loader directly instead of under a sandbox that cannot start:</p>
-    <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>sudo tee /usr/local/bin/bwrap &gt;/dev/null &lt;&lt;'EOF'
-#!/bin/sh
-while [ $# -gt 0 ]; do
-  case "$1" in
-    */glycin-loaders/*) exec "$@" ;;
-  esac
-  shift
-done
-echo "bwrap shim: refusing unrecognised command" &gt;&amp;2
-exit 1
-EOF
-sudo chmod +x /usr/local/bin/bwrap</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-    <p>Check that it is the one being found. This must print <code>/usr/local/bin/bwrap</code>, not <code>/usr/bin/bwrap</code>:</p>
-    <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>command -v bwrap</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
+    <h3>The screen is black, or nothing appears</h3>
+    <p>Open the Termux:X11 app from your app drawer. The desktop is usually running fine; the window just did not come to the front.</p>
+
+    <h3>"cannot open display"</h3>
+    <p>The X server was not ready. Press Ctrl+C in Termux and run <code>~/desktop</code> again &mdash; it clears up the half-started session before retrying.</p>
+
+    <h3>It worked yesterday and not today</h3>
+    <p>Almost always a leftover process from the previous run. <code>~/desktop</code> already clears those out at the start, so run it a second time before assuming anything is broken. If that fails, close Termux entirely (swipe it away from your recent apps) and start again.</p>
+
+    <h3>No sound</h3>
+    <p>Sound only starts when <code>~/desktop</code> does. If you logged into Debian by hand rather than using the script, there is no audio; exit and use the script.</p>
+
+    <h3>Warnings in the terminal</h3>
+    <p>A running desktop prints a great deal of noise &mdash; missing metadata files, D-Bus messages, complaints about sensors and power management that a phone container does not have. None of it means anything is wrong. The only messages worth reading are ones followed by the desktop actually disappearing.</p>
+
     <div class="callout">
-      <strong>Understand what this trades away.</strong> glycin sandboxes image decoding because image parsers are a classic place for memory-safety bugs, and a malicious image is an easy thing to be handed. This shim removes that sandbox for glycin's loaders, so anything that decodes an image in this container &mdash; a web page in Firefox included &mdash; does so unsandboxed. It walks past <code>bwrap</code>'s own arguments and will only run a binary under <code>glycin-loaders/</code>, refusing anything else, which keeps it from becoming a general sandbox bypass. It does not touch the packaged <code>/usr/bin/bwrap</code>; delete <code>/usr/local/bin/bwrap</code> to undo it.
-    </div>
-  </section>
-
-  <section class="step" id="s10">
-    <div class="step-head"><span class="step-num">STEP 10</span></div>
-    <h2>Launch everything</h2>
-    <p>Each of these runs in order. Steps 1&ndash;3 happen in plain Termux, <em>before</em> logging into Alpine.</p>
-
-    <p><strong>10.1 &mdash; Start PulseAudio (Termux):</strong></p>
-    <div class="codebox">
-      <span class="label">termux</span>
-      <pre>pulseaudio --start --exit-idle-time=-1
-pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <p><strong>10.2 &mdash; Start Termux:X11 (Termux):</strong></p>
-    <div class="codebox">
-      <span class="label">termux</span>
-      <pre>export DISPLAY=:0
-termux-x11 :0 &</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-    <p class="small-note">This should open the Termux:X11 app automatically. If it doesn't, open it manually from your app drawer.</p>
-
-    <p><strong>10.3 &mdash; Start the virglrenderer server (Termux):</strong></p>
-    <div class="codebox">
-      <span class="label">termux</span>
-      <pre>virgl_test_server_android &</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <p><strong>10.4 &mdash; Log into Alpine as your user:</strong></p>
-    <div class="codebox">
-      <span class="label">termux</span>
-      <pre>proot-distro login alpine --user user --shared-tmp</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <p><strong>10.5 &mdash; Launch Openbox, Cage, and Phosh (inside Alpine):</strong></p>
-    <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>export DISPLAY=:0
-export XDG_RUNTIME_DIR=/tmp
-openbox &
-dbus-run-session -- cage -- phoc -S -C /usr/share/phosh/phoc.ini -E '/usr/libexec/phosh -U'</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-    <div class="callout">
-      <strong>This command differs from the original guide, in three ways that all matter.</strong>
-      <br><br>
-      <strong>1. <code>-U</code> moved inside the quotes.</strong> The original ends the line with a bare <code>-U</code>, where it lands on <code>phoc</code> &mdash; which has no such option, so <code>phoc</code> prints <code>Unknown option -U</code> and exits before Phosh ever starts. <code>-U</code> is a <em>Phosh</em> option meaning "don't start with the screen locked", so it belongs inside the <code>-E</code> string. Without it Phosh comes up on a lock screen you have no PIN for.
-      <br><br>
-      <strong>2. <code>dbus-run-session</code> in front.</strong> Phosh is a GNOME shell and needs a session message bus; it depends on <code>dbus-x11</code> and reaches D-Bus services for secrets, power, networking and audio. Nothing in a proot container provides one, so it has to be started here. Upstream's own <code>phosh-session</code> script does the same thing when it finds no bus.
-      <br><br>
-      <strong>3. <code>-S</code> and <code>-C</code>.</strong> These are the flags <code>phosh-session</code> itself passes: <code>-S</code> puts <code>phoc</code> in shell mode so Phosh can attach as the shell, and <code>-C</code> points at the <code>phoc.ini</code> that ships in the <code>phosh</code> package. The <code>--</code> separators make clear which arguments belong to which program.
-    </div>
-    <p class="small-note">Note this command is <strong>not</strong> backgrounded with <code>&amp;</code>. Keep it in the foreground so you can see why it exits if it does.</p>
-    <p class="small-note">Do not substitute <code>phosh-session</code> for this command, even though that is the normal way to start Phosh on real hardware. It forces <code>WLR_BACKENDS=drm,libinput</code>, which needs direct access to the display and input hardware &mdash; exactly what an unprivileged proot container does not have.</p>
-  </section>
-
-  <section class="step" id="s11">
-    <div class="step-head"><span class="step-num">STEP 11</span></div>
-    <h2>Fit the display to your screen</h2>
-    <p>Switch to the Termux:X11 app. An Openbox window frame should appear &mdash; double-tap its title bar to maximize it.</p>
-    <p>Pull down your phone's notification shade, tap the Termux:X11 notification's preferences, and set:</p>
-    <p class="small-note"><strong>Output</strong> &rarr; Scaled (fits Phosh to your screen size) &nbsp;&middot;&nbsp; <strong>Pointer</strong> &rarr; Direct Touch (makes your screen taps register as touch, not a mouse cursor)</p>
-    <div class="callout">
-      <strong>If Phosh doesn't come up, or only worked once:</strong> this is a known, currently-unresolved issue with this setup, not something you did wrong. Killing the <code>cage</code> process and re-running step 10.5 is the usual first thing to try.
-    </div>
-
-    <h2 style="margin-top:34px">Reading the startup log</h2>
-    <p>Step 10.5 prints a wall of warnings even when it works. These lines are all expected in a proot container and are <strong>not</strong> why something failed:</p>
-    <div class="codebox">
-      <span class="label">harmless</span>
-      <pre>Failed to open DRI3
-Failed to query DRI3 DRM FD
-Disabling DMA-BUF support
-drmGetDevices2 failed: Permission denied
-Creating pixman renderer
-Failed to create wlr_drm_lease_manager_v1
-X11 error: op 18:0, code 5
-Linux dmabuf support unavailable
-Output 'WL-1' has invalid physical size, using default scale
-g_local_file_query_exists: faccessat doesn't support supplied flags
-Metadata file '...' does not exist
-PolKit failed to properly get our session: No session for pid
-Auth agent failed to register: No session for pid
-Failed to connect to sensor-proxy
-Got no sensor-proxy, no automatic rotation
-Failed to load background image: ...adwaita-timed.xml</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-    <p class="small-note">They all say the same thing in different words: there is no direct access to the GPU or display hardware from inside an unprivileged container, so rendering falls back to <code>pixman</code>, which draws on the CPU. That is the expected outcome here, and Phosh is still usable at phone resolution. Seeing <code>Mapping input device x11-pointer</code> and <code>x11-touch</code> means input is working.</p>
-    <p class="small-note">The dozens of <code>Metadata file ... does not exist</code> lines are Phosh looking for desktop files belonging to GNOME components this container does not have; they scroll for pages and mean nothing. <code>faccessat doesn't support supplied flags</code> is proot emulating a syscall imperfectly. The PolKit and sensor-proxy lines mean no login session and no rotation sensor, neither of which stops Phosh.</p>
-    <p class="small-note">The lines that actually matter are the ones that end in something exiting:<br>
-    &middot; <code>phoc-WARNING **: Unknown option</code> &mdash; a flag in your launch command is wrong and <code>phoc</code> quit before starting.<br>
-    &middot; <code>Gtk:ERROR ... ensure_surface_for_gicon</code> followed by <code>Bail out!</code> and <code>killed by signal 6</code> &mdash; the image-loader sandbox problem. Go back to step 9 and install the <code>bwrap</code> shim.</p>
-
-    <p><strong>A window opens, loads for a while, then closes.</strong> That means <code>phoc</code> started and Phosh itself exited; <code>phoc</code> returns its session's exit status, so it follows the shell out. To capture why, run the launch command in the foreground and tee it to a file:</p>
-    <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>dbus-run-session -- cage -- phoc -v -S -C /usr/share/phosh/phoc.ini \
-  -E '/usr/libexec/phosh -U' 2>&1 | tee ~/phosh.log</pre>
-      <button class="copy-btn">Copy</button>
-    </div>
-    <p>When the window closes, the log is still there. The interesting part is the end of it:</p>
-    <div class="codebox">
-      <span class="label">inside alpine</span>
-      <pre>tail -40 ~/phosh.log</pre>
-      <button class="copy-btn">Copy</button>
+      <strong>Things that will not work, no matter what you try.</strong> There is no access to your GPU, so everything renders on the CPU. There is no access to raw input devices, so multi-touch gesture tools such as <code>touchegg</code> cannot function. There is no real init system, so anything expecting <code>systemd</code> will not start. These are consequences of running unprivileged on a locked phone, not of anything you have done wrong, and no amount of configuration changes them.
     </div>
   </section>
 
   <footer>
-    Adapted from <a href="https://ivonblog.com/en-us/posts/postmarketos-in-termux-proot/" target="_blank" rel="noopener">Ivon Huang's original guide</a> (CC BY-SA 4.0). This page is a static HTML file &mdash; host it anywhere: a folder served by <code>python3 -m http.server</code>, GitHub Pages, Netlify, or just open the file directly in a browser.
+    Written for a Nokia X30 running Termux with <code>proot-distro</code>, Debian 13 (trixie) and XFCE 4.20. Nothing here needs root or an unlocked bootloader. This page is a single static HTML file &mdash; host it anywhere, or save it for offline use.
   </footer>
 
 </div>
 
 <script>
-  var DEFAULTS = { pmos: 'v26.06', alpine: 'v3.24' };
-
-  function applyVersions() {
-    ['pmos', 'alpine'].forEach(function (key) {
-      var field = document.getElementById('in-' + key);
-      var value = field.value.trim() || DEFAULTS[key];
-      document.querySelectorAll('[data-v="' + key + '"]').forEach(function (el) {
-        el.textContent = value;
-      });
-    });
-  }
-
-  document.getElementById('in-pmos').addEventListener('input', applyVersions);
-  document.getElementById('in-alpine').addEventListener('input', applyVersions);
-
   document.querySelectorAll('.copy-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var text = btn.parentElement.querySelector('pre').textContent;
