@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pocket Desktop</title>
+<style>
+  :root {
+    --ink: #1c2321;
+    --paper: #f6f3ec;
+    --panel: #ffffff;
+    --rule: #d9d3c3;
+    --accent: #3a5a40;
+    --accent-dim: #6b8f71;
+    --code-bg: #21261f;
+    --code-text: #dfe8d8;
+    --warn: #9c4221;
+    --warn-bg: #fbeee7;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 660px; margin: 0 auto; padding: 0 18px 80px; }
+
+  header.hero { padding: 48px 18px 30px; border-bottom: 1px solid var(--rule); }
+  header.hero .wrap { padding: 0; }
+  .kicker {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px; letter-spacing: 0.04em; color: var(--accent-dim); margin: 0 0 10px;
+  }
+  h1 { font-size: 34px; line-height: 1.15; margin: 0 0 14px; font-weight: 600; max-width: 22ch; }
+  .dek { font-size: 17px; color: #4a4f45; max-width: 48ch; margin: 0; }
+
+  nav.toc {
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 4px;
+    padding: 18px 20px; margin: 28px 0 40px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  nav.toc p { margin: 0 0 10px; font-size: 12px; letter-spacing: 0.03em; color: var(--accent-dim); }
+  nav.toc ol { margin: 0; padding-left: 20px; font-size: 14.5px; }
+  nav.toc li { margin-bottom: 6px; }
+  nav.toc a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  nav.toc a:hover { border-color: var(--accent); }
+
+  section.step { margin-bottom: 46px; scroll-margin-top: 18px; }
+  .step-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+  .step-num {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px; color: var(--accent-dim); white-space: nowrap;
+  }
+  h2 { font-size: 21px; margin: 0; font-weight: 600; }
+  h3 { font-size: 17px; margin: 30px 0 6px; font-weight: 600; }
+  .step p { font-size: 16px; }
+  .small-note {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px; color: #5a5f52; background: #edeadf;
+    border-left: 3px solid var(--accent-dim);
+    padding: 10px 14px; border-radius: 0 4px 4px 0;
+  }
+
+  .callout {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14.5px; background: var(--warn-bg);
+    border-left: 3px solid var(--warn); color: #5c2c14;
+    padding: 12px 16px; border-radius: 0 4px 4px 0; margin: 14px 0;
+  }
+  .callout strong { color: var(--warn); }
+
+  .codebox { position: relative; background: var(--code-bg); border-radius: 6px; margin: 14px 0; overflow: hidden; }
+  .codebox .label {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 11.5px; color: #93a68d; padding: 9px 14px 0; display: block;
+  }
+  .codebox pre {
+    margin: 0; padding: 10px 14px 14px; overflow-x: auto;
+    font-family: "SF Mono", "Menlo", "Consolas", monospace;
+    font-size: 13.5px; color: var(--code-text); white-space: pre;
+  }
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 12px; background: #33392f; color: #dfe8d8;
+    border: 1px solid #454c3d; border-radius: 4px; padding: 5px 10px;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .copy-btn:active { transform: scale(0.96); }
+  .copy-btn.copied { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  table.apps {
+    width: 100%; border-collapse: collapse; margin: 16px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px;
+  }
+  table.apps td { padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  table.apps td:first-child { width: 38%; }
+  table.apps code { font-size: 13px; }
+
+  footer {
+    margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--rule);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px; color: #6b6f63;
+  }
+  footer a { color: var(--accent); }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 28px; }
+    header.hero { padding: 36px 18px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">FLUXLINUX &middot; DEBIAN &middot; XFCE &middot; ANDROID</p>
+    <h1>Turning a desktop into something you can use with your thumbs</h1>
+    <p class="dek">Picking up where FluxLinux leaves off: window behaviour, screen space and control sizes for a 6-inch display, then the applications that make it worth carrying.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="callout">
+    <strong>What this assumes.</strong> You already have <a href="https://github.com/abhay-byte/fluxlinux" target="_blank" rel="noopener">FluxLinux</a> installed with a Debian container running XFCE, and you can open a terminal inside that desktop. This is not an installation guide &mdash; it starts at the point where you have a working but awkward desktop, and makes it pleasant. Everything below runs <strong>inside the Debian container</strong>, as root, unless it says otherwise.
+  </div>
+
+  <nav class="toc">
+    <p>ON THIS PAGE</p>
+    <ol>
+      <li><a href="#s1">1. Windows that open maximised</a></li>
+      <li><a href="#s2">2. Reclaim the wasted edges</a></li>
+      <li><a href="#s3">3. Size the controls for fingers</a></li>
+      <li><a href="#s4">4. Browsers</a></li>
+      <li><a href="#s5">5. OnlyOffice</a></li>
+      <li><a href="#s6">6. GNOME apps that suit a small screen</a></li>
+      <li><a href="#s7">7. What to expect</a></li>
+    </ol>
+  </nav>
+
+  <section class="step" id="s1">
+    <div class="step-head"><span class="step-num">STEP 1</span></div>
+    <h2>Windows that open maximised</h2>
+    <p>On a phone screen there is no such thing as a useful floating window. XFCE has no setting for this, so it takes a small helper: <code>devilspie2</code> watches for new windows and acts on them.</p>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>apt update
+apt install -y devilspie2</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p>Give it one rule. Normal windows get maximised; dialogs, menus and popups are left alone, which matters &mdash; maximising a file-picker dialog is worse than useless:</p>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>mkdir -p ~/.config/devilspie2
+cat &gt; ~/.config/devilspie2/maximise.lua &lt;&lt;'EOF'
+if (get_window_type() == "WINDOW_TYPE_NORMAL") then
+   maximize()
+end
+EOF</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p>Start it with the desktop, every time:</p>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>mkdir -p ~/.config/autostart
+cat &gt; ~/.config/autostart/devilspie2.desktop &lt;&lt;'EOF'
+[Desktop Entry]
+Type=Application
+Name=devilspie2
+Exec=devilspie2
+X-GNOME-Autostart-enabled=true
+EOF
+devilspie2 &amp;</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p class="small-note">The last line starts it now so you can test without restarting. Open something &mdash; it should fill the screen.</p>
+    <p class="small-note">Prefer true fullscreen, with the panel hidden too? Replace <code>maximize()</code> with <code>set_window_fullscreen(true)</code>. On a phone that is usually the wrong trade: you lose the panel, and with it the only easy way to switch between applications.</p>
+  </section>
+
+  <section class="step" id="s2">
+    <div class="step-head"><span class="step-num">STEP 2</span></div>
+    <h2>Reclaim the wasted edges</h2>
+    <p>A maximised window still wears a title bar and a border it has no use for &mdash; there is nothing to drag it to. XFCE can drop both:</p>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>xfconf-query -c xfwm4 -p /general/titleless_maximize -n -t bool -s true
+xfconf-query -c xfwm4 -p /general/borderless_maximize -n -t bool -s true
+xfconf-query -c xfwm4 -p /general/use_compositing -n -t bool -s false</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p class="small-note">That recovers roughly 40 vertical pixels per window and, with compositing off, a noticeable amount of speed. There is no GPU doing the compositing here, so it costs you nothing to switch off.</p>
+    <p>The panel can get out of the way too, appearing when you reach for the screen edge:</p>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>xfconf-query -c xfce4-panel -p /panels/panel-1/autohide-behavior -n -t int -s 1</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p class="small-note">If that behaves oddly, set it in the GUI instead: right-click the panel &rarr; Panel &rarr; Panel Preferences &rarr; Automatically hide the panel.</p>
+
+    <h3>And the row of keys at the bottom of Termux</h3>
+    <p>Termux draws two rows of extra keys that eat screen height. You do not have to configure anything to be rid of them &mdash; there is a built-in toggle:</p>
+    <p class="small-note"><strong>Volume&nbsp;Up + Q</strong> hides and shows the extra keys row. (<strong>Volume&nbsp;Up + K</strong> does the same thing.)</p>
+    <p>To remove them permanently instead, in <strong>Termux</strong>, not the container:</p>
+    <div class="codebox">
+      <span class="label">termux</span>
+      <pre>mkdir -p ~/.termux
+echo "extra-keys = [[]]" &gt;&gt; ~/.termux/termux.properties
+termux-reload-settings</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p class="small-note">Try the keypress first. You will want those keys back the moment you do terminal work rather than desktop work, and a keypress is easier to undo than a config file.</p>
+  </section>
+
+  <section class="step" id="s3">
+    <div class="step-head"><span class="step-num">STEP 3</span></div>
+    <h2>Size the controls for fingers</h2>
+    <div class="callout">
+      <strong>Do not use XFCE's display scaling.</strong> It is integer-only &mdash; 1&times; or 2&times;, with nothing in between. 2&times; is a blunt doubling that looks crude and throws away the screen you paid for. This is the real difference you noticed against Plasma, which has proper fractional scaling. XFCE cannot do that, so do not ask it to.
+    </div>
+    <p>Instead, scale the <em>chrome</em> and leave the <em>content</em> alone. A 6.4-inch 1080&times;2400 screen is about 16 pixels per millimetre. A default 36-pixel panel is roughly 2&nbsp;mm tall; a fingertip needs 7&ndash;9&nbsp;mm. Menus, panels and title bars have to grow. Documents and web pages do not &mdash; those have their own zoom, and you can read them perfectly well at full density.</p>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre># Interface text — affects menus, buttons and dialogs, not documents
+xfconf-query -c xsettings -p /Gtk/FontName -n -t string -s "Sans 13"
+
+# A panel you can actually hit: 96px is about 6mm
+xfconf-query -c xfce4-panel -p /panels/panel-1/size -n -t int -s 96
+
+# For the windows that do still show a title bar
+xfconf-query -c xfwm4 -p /general/title_font -n -t string -s "Sans Bold 15"
+xfconf-query -c xfwm4 -p /general/button_layout -n -t string -s "|MC"
+
+# Stop a slightly wobbly tap registering as a drag
+xfconf-query -c xsettings -p /Net/DndDragThreshold -n -t int -s 24
+xfconf-query -c xsettings -p /Net/DoubleClickTime -n -t int -s 500
+
+# One tap opens a file
+xfconf-query -c thunar -p /misc-single-click -n -t bool -s true
+
+# Bigger pointer, for when you do use a mouse
+xfconf-query -c xsettings -p /Gtk/CursorThemeSize -n -t int -s 32</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p class="small-note">If you change one thing on this page, make it <code>DndDragThreshold</code>. The default is 8 pixels &mdash; half a millimetre here. Every slightly imprecise tap becomes an accidental drag, and the desktop feels broken rather than merely small.</p>
+    <p class="small-note"><code>button_layout</code> of <code>"|MC"</code> leaves only maximise and close on the right. Fewer, larger targets, and no more closing a window when you meant to minimise it.</p>
+    <p>Finally, in the <strong>Termux:X11</strong> notification preferences, set <strong>Pointer &rarr; Direct Touch</strong>. That is what turns your finger into a finger rather than a trackpad.</p>
+  </section>
+
+  <section class="step" id="s4">
+    <div class="step-head"><span class="step-num">STEP 4</span></div>
+    <h2>Browsers</h2>
+    <h3>Epiphany — the one that actually fits</h3>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>apt install -y epiphany-browser</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p class="small-note">GNOME Web. It is built with libadwaita, which means its interface genuinely reflows for narrow screens rather than shrinking &mdash; it is the browser used on Linux phones. Light, and the best-behaved of the three on a display this size.</p>
+
+    <h3>Vivaldi — for when you need a full browser</h3>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>apt install -y wget gnupg
+wget -qO- https://repo.vivaldi.com/archive/linux_signing_key.pub \
+  | gpg --dearmor -o /usr/share/keyrings/vivaldi.gpg
+echo "deb [signed-by=/usr/share/keyrings/vivaldi.gpg arch=arm64] \
+https://repo.vivaldi.com/archive/deb/ stable main" \
+  &gt; /etc/apt/sources.list.d/vivaldi.list
+apt update
+apt install -y vivaldi-stable</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p class="small-note">Vivaldi does publish arm64 builds, despite its repository's <code>Release</code> file listing only amd64 &mdash; the arm64 index is populated and current. About 450&nbsp;MB installed. It is a heavy browser on a device with no graphics acceleration; keep Epiphany for everyday reading and reach for this when a site demands it.</p>
+    <p class="small-note">Firefox ESR and Chromium are both in Debian if you would rather: <code>apt install -y firefox-esr</code>.</p>
+  </section>
+
+  <section class="step" id="s5">
+    <div class="step-head"><span class="step-num">STEP 5</span></div>
+    <h2>OnlyOffice</h2>
+    <p>Not in Debian, and not available as a Flatpak you can use &mdash; see the note below. Install the arm64 package directly:</p>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>apt install -y wget
+wget https://download.onlyoffice.com/install/desktop/editors/linux/onlyoffice-desktopeditors_arm64.deb
+apt install -y ./onlyoffice-desktopeditors_arm64.deb
+rm onlyoffice-desktopeditors_arm64.deb</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p class="small-note">Using <code>apt install ./file.deb</code> rather than <code>dpkg -i</code> pulls in its dependencies automatically. They are all ordinary Debian packages &mdash; GTK3, Cairo, ALSA, GStreamer, fonts &mdash; with nothing that a container cannot provide. Budget about <strong>1.3&nbsp;GB installed</strong> on top of the download.</p>
+    <div class="callout">
+      <strong>Do not try the Flatpak.</strong> Flatpak depends on <code>bubblewrap</code>, and bubblewrap needs unprivileged user namespaces, which <code>proot</code> cannot provide. Every Flatpak application fails the same way, and it is not something a workaround can patch around &mdash; sandboxing is the whole of what Flatpak does. This applies to any Flatpak in a proot container, not just this one.
+    </div>
+  </section>
+
+  <section class="step" id="s6">
+    <div class="step-head"><span class="step-num">STEP 6</span></div>
+    <h2>GNOME apps that suit a small screen</h2>
+    <p>This is a better idea than it first sounds. Modern GNOME applications are built with libadwaita, which was designed for Linux phones &mdash; they collapse to a single column on a narrow window instead of becoming a cramped desktop layout. They are the most touch-appropriate software you can put on this desktop, and they run perfectly well under XFCE.</p>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>apt install -y gnome-console nautilus gnome-calculator \
+  gnome-weather gnome-maps gnome-clocks \
+  gnome-text-editor gnome-contacts gnome-calendar</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <table class="apps">
+      <tr><td><code>gnome-console</code></td><td>KGX. Clean, touch-friendly terminal.</td></tr>
+      <tr><td><code>nautilus</code></td><td>Files. Adaptive, and far nicer than Thunar with a finger.</td></tr>
+      <tr><td><code>gnome-calculator</code></td><td>Includes currency conversion &mdash; switch mode from the hamburger menu.</td></tr>
+      <tr><td><code>gnome-weather</code></td><td>Set your city by hand; see the note below.</td></tr>
+      <tr><td><code>gnome-maps</code></td><td>Works, but search and routing need a connection.</td></tr>
+      <tr><td><code>gnome-clocks</code></td><td>World clocks, timers, alarms.</td></tr>
+      <tr><td><code>gnome-text-editor</code></td><td>Light, adaptive, good for notes.</td></tr>
+      <tr><td><code>gnome-contacts</code>, <code>gnome-calendar</code></td><td>Useful if you connect an account.</td></tr>
+    </table>
+
+    <div class="callout">
+      <strong>These need one environment variable to be quick.</strong> GNOME apps use GTK4, which renders through OpenGL by default. There is no GPU here, so that path goes through software emulation and feels terrible. GTK4 accepts a plain software renderer instead, and it is markedly faster for this kind of interface.
+    </div>
+    <div class="codebox">
+      <span class="label">inside debian</span>
+      <pre>echo 'export GSK_RENDERER=cairo' &gt;&gt; ~/.profile</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p>Restart the desktop, then check it took effect &mdash; open a terminal inside the session and run:</p>
+    <div class="codebox">
+      <span class="label">inside the desktop</span>
+      <pre>echo $GSK_RENDERER</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p class="small-note">If that prints nothing, FluxLinux is starting the session without reading <code>~/.profile</code>. You can still get the benefit per-application by launching with the variable inline, for example <code>GSK_RENDERER=cairo nautilus</code>, or by adding it to each application's launcher command.</p>
+    <p class="small-note">Location services do not exist in a container, so Weather and Maps cannot find you. Set your location by hand once and they behave normally after that.</p>
+  </section>
+
+  <section class="step" id="s7">
+    <div class="step-head"><span class="step-num">STEP 7</span></div>
+    <h2>What to expect</h2>
+    <p>Restart the desktop so everything above takes effect together. What you should have: applications that open filling the screen with no title bar, a panel you can hit that stays out of the way, taps that do not turn into drags, and a set of applications that were designed for a screen this shape.</p>
+    <p>What will still be true:</p>
+    <table class="apps">
+      <tr><td>Software rendering</td><td>No GPU acceleration is configured. Everything draws on the CPU, so heavy applications start slowly and scroll imperfectly.</td></tr>
+      <tr><td>No gesture support</td><td>Multi-touch gesture daemons such as <code>touchegg</code> read raw input devices, which a container cannot reach. Direct Touch gives you taps and drags, not swipes.</td></tr>
+      <tr><td>No Flatpak, no Snap</td><td>Both need facilities proot has no way to provide.</td></tr>
+      <tr><td>No location, no sensors</td><td>Anything expecting GPS, rotation or ambient light will fall back or fail quietly.</td></tr>
+    </table>
+    <p class="small-note">Two of the settings here are worth revisiting once you have lived with it: the panel size, and the interface font. They are the two that trade screen space against reachability, and the right answer depends on whether you are mostly reading or mostly tapping.</p>
+  </section>
+
+  <footer>
+    Written for a Nokia X30 &mdash; 1080&times;2400 at about 409&nbsp;ppi &mdash; running FluxLinux with a Debian container and XFCE 4.20. Every package name, configuration property and command here was checked against the shipped packages rather than written from memory. A companion guide that builds the same thing by hand, without FluxLinux, is at <a href="../ppg/">/ppg</a>.
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.parentElement.querySelector('pre').textContent;
+      navigator.clipboard.writeText(text).then(function () {
+        var original = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1400);
+      }).catch(function () {
+        btn.textContent = 'Select & copy manually';
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
