@@ -212,10 +212,56 @@
   }
   footer a { color: var(--accent); }
 
+
+  .version-panel {
+    background: var(--panel);
+    border: 1px solid var(--accent-dim);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin: 28px 0 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .version-panel .vp-title {
+    margin: 0 0 6px;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .version-panel .vp-note {
+    margin: 0 0 14px;
+    font-size: 13.5px;
+    color: #5a5f52;
+    line-height: 1.45;
+  }
+  .version-panel .vp-note a { color: var(--accent); }
+  .vp-fields { display: flex; gap: 14px; flex-wrap: wrap; }
+  .vp-fields label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    color: #5a5f52;
+    flex: 1;
+    min-width: 130px;
+  }
+  .vp-fields input {
+    font-family: "SF Mono", "Menlo", "Consolas", monospace;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 8px 10px;
+    width: 100%;
+  }
+  .vp-fields input:focus { outline: 2px solid var(--accent-dim); outline-offset: -1px; }
+
   @media (max-width: 480px) {
     h1 { font-size: 28px; }
     header.hero { padding: 36px 18px 24px; }
     .editor-tabs { flex-direction: column; }
+    .vp-fields { flex-direction: column; }
   }
 </style>
 </head>
@@ -232,6 +278,19 @@
 
 <div class="wrap">
 
+  <div class="version-panel">
+    <p class="vp-title">SET YOUR VERSIONS</p>
+    <p class="vp-note">Every command, URL and config file below rewrites itself to match &mdash; including what the Copy buttons put on your clipboard. The two versions are <strong>not independent</strong>: each postmarketOS release is built against one specific Alpine release, and mixing them will make <code>apk</code> fail to resolve packages. The current pairing is listed in postmarketOS's own <a href="https://gitlab.postmarketos.org/postmarketOS/pmaports/-/raw/main/channels.cfg" target="_blank" rel="noopener">channels.cfg</a> &mdash; find your release and use its <code>mirrordir_alpine</code> value as the Alpine version.</p>
+    <div class="vp-fields">
+      <label>postmarketOS release
+        <input id="in-pmos" type="text" value="v26.06" spellcheck="false" autocapitalize="off" autocorrect="off">
+      </label>
+      <label>Alpine version
+        <input id="in-alpine" type="text" value="v3.24" spellcheck="false" autocapitalize="off" autocorrect="off">
+      </label>
+    </div>
+  </div>
+
   <div class="callout">
     <strong>Read this first.</strong> This is not real postmarketOS &mdash; it's Alpine Linux running in an unprivileged proot container, converted to use pmOS repositories and packages. There's no direct hardware access, no kernel-level power management, and Phosh is a Wayland compositor nested awkwardly inside X11. Expect roughness: the source guide itself notes Phosh may only launch reliably once or twice per session.
   </div>
@@ -241,7 +300,7 @@
     <ol>
       <li><a href="#prereqs">Prerequisites</a></li>
       <li><a href="#s1">1. Install proot Alpine</a></li>
-      <li><a href="#s2">2. Switch Alpine to v3.20</a></li>
+      <li><a href="#s2">2. Switch Alpine to <span data-v="alpine">v3.24</span></a></li>
       <li><a href="#s3">3. Create a user &amp; grant sudo</a></li>
       <li><a href="#s4">4. Set the timezone</a></li>
       <li><a href="#s5">5. (Optional) Enable SSH</a></li>
@@ -257,8 +316,11 @@
   <section class="step" id="prereqs">
     <div class="step-head"><span class="step-num">BEFORE YOU START</span></div>
     <h2>Prerequisites</h2>
-    <p>Install these from F-Droid or their official sources first &mdash; not the Play Store versions, which are outdated:</p>
-    <p class="small-note">Termux &middot; Termux:X11 &middot; (optional) a virglrenderer build for hardware acceleration &middot; Hacker's Keyboard, for a real keyboard layout when typing into the desktop.</p>
+    <p>Install these Android apps from F-Droid or their official sources first &mdash; not the Play Store versions, which are outdated:</p>
+    <p class="small-note">Termux &middot; Termux:X11 &middot; Hacker's Keyboard, for a real keyboard layout when typing into the desktop.</p>
+    <div class="callout">
+      <strong>Termux:X11 is two separate pieces.</strong> The app you just installed is only the X server &mdash; the window that eventually displays the desktop. The <code>termux-x11</code> <em>command</em> that talks to it lives in a separate Termux package, which is not installed by default and does not come from Termux's standard repository. Step 1 installs it. Miss this and step 10.2 fails with <code>termux-x11: command not found</code>.
+    </div>
   </section>
 
   <section class="step" id="s1">
@@ -270,39 +332,44 @@
       <pre>pkg update
 pkg install proot-distro pulseaudio
 proot-distro install alpine</pre>
-      <button class="copy-btn" data-copy="pkg update
-pkg install proot-distro pulseaudio
-proot-distro install alpine">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
+
+    <p>Now add the X11 packages. These are <strong>not</strong> in Termux's default repository &mdash; <code>x11-repo</code> is a small package whose only job is to register that extra repository, so it has to go in first and be followed by a <code>pkg update</code> before the other two are visible:</p>
+    <div class="codebox">
+      <span class="label">termux</span>
+      <pre>pkg install x11-repo
+pkg update
+pkg install termux-x11-nightly virglrenderer-android</pre>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <p class="small-note"><code>termux-x11-nightly</code> provides the <code>termux-x11</code> command used in step 10.2. <code>virglrenderer-android</code> provides <code>virgl_test_server_android</code> used in step 10.3 &mdash; it routes the container's OpenGL calls to your phone's GPU. Treat it as required, not optional: Phosh is a compositor, and without it everything renders in software on the CPU.</p>
   </section>
 
   <section class="step" id="s2">
     <div class="step-head"><span class="step-num">STEP 2</span></div>
-    <h2>Switch Alpine's repo from Edge to v3.20</h2>
+    <h2>Switch Alpine's repo from Edge to <span data-v="alpine">v3.24</span></h2>
     <p>Edge is Alpine's rolling/unstable branch. Log in and edit the repo file:</p>
     <div class="codebox">
       <span class="label">termux</span>
       <pre>proot-distro login alpine --shared-tmp
 apk update
 apk add nano</pre>
-      <button class="copy-btn" data-copy="proot-distro login alpine --shared-tmp
-apk update
-apk add nano">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <p>Then open the repo file:</p>
     <div class="codebox">
       <span class="label">inside alpine</span>
       <pre>nano /etc/apk/repositories</pre>
-      <button class="copy-btn" data-copy="nano /etc/apk/repositories">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
-    <p>Inside nano: use the arrow keys to edit directly (no mode switching needed), change every line that says <code>edge</code> to <code>v3.20</code> (e.g. <code>.../alpine/edge/main</code> &rarr; <code>.../alpine/v3.20/main</code>), then press <kbd>Ctrl+O</kbd> then Enter to save, and <kbd>Ctrl+X</kbd> to exit.</p>
+    <p>Inside nano: use the arrow keys to edit directly (no mode switching needed), change every line that says <code>edge</code> to <code><span data-v="alpine">v3.24</span></code> (e.g. <code>.../alpine/edge/main</code> &rarr; <code>.../alpine/<span data-v="alpine">v3.24</span>/main</code>), then press <kbd>Ctrl+O</kbd> then Enter to save, and <kbd>Ctrl+X</kbd> to exit.</p>
     <p>Now update:</p>
     <div class="codebox">
       <span class="label">inside alpine</span>
       <pre>apk update
 apk upgrade</pre>
-      <button class="copy-btn" data-copy="apk update
-apk upgrade">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
   </section>
 
@@ -315,9 +382,7 @@ apk upgrade">Copy</button>
       <pre>apk add sudo
 addgroup storage
 adduser -g wheel,storage,video,audio user</pre>
-      <button class="copy-btn" data-copy="apk add sudo
-addgroup storage
-adduser -g wheel,storage,video,audio user">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <p>You'll be prompted to set a password for <code>user</code> &mdash; type one and confirm it.</p>
 
@@ -331,15 +396,13 @@ adduser -g wheel,storage,video,audio user">Copy</button>
       <pre>apk add nano
 export EDITOR=nano
 visudo</pre>
-      <button class="copy-btn" data-copy="apk add nano
-export EDITOR=nano
-visudo">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <p>This opens <code>/etc/sudoers</code> in nano. Add this line at the <strong>very bottom</strong> of the file &mdash; it lets your new user run <code>sudo</code> without typing a password every time, since this container only you can access:</p>
     <div class="codebox">
       <span class="label">add to sudoers</span>
       <pre>user ALL=(ALL) NOPASSWD: ALL</pre>
-      <button class="copy-btn" data-copy="user ALL=(ALL) NOPASSWD: ALL">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <p class="small-note">Prefer to keep a password prompt on <code>sudo</code>? Use <code>user ALL=(ALL) ALL</code> instead. Either works with the rest of this guide &mdash; the passwordless version is just less friction inside a container nobody else can reach.</p>
     <div class="editor-card" style="margin: 16px 0;">
@@ -362,8 +425,7 @@ visudo">Copy</button>
       <span class="label">inside alpine</span>
       <pre>sudo ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime
 sudo setup-timezone</pre>
-      <button class="copy-btn" data-copy="sudo ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime
-sudo setup-timezone">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
   </section>
 
@@ -374,7 +436,7 @@ sudo setup-timezone">Copy</button>
     <div class="codebox">
       <span class="label">inside alpine</span>
       <pre>sudo nano /etc/ssh/sshd_config</pre>
-      <button class="copy-btn" data-copy="sudo nano /etc/ssh/sshd_config">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <p>Find the line starting with <code>Port</code> and change <code>22</code> to <code>8023</code> (regular Termux, outside proot, may already use port 22). Save with <kbd>Ctrl+O</kbd>, Enter, then exit with <kbd>Ctrl+X</kbd>.</p>
     <div class="codebox">
@@ -383,10 +445,7 @@ sudo setup-timezone">Copy</button>
 rc-update add sshd
 rc-service sshd start
 ip addr</pre>
-      <button class="copy-btn" data-copy="ssh-keygen -A
-rc-update add sshd
-rc-service sshd start
-ip addr">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <p class="small-note">The last command prints your phone's IP address &mdash; you'll need it to connect. Note: <code>rc-service</code>, not the guide's typo <code>rc-serive</code>.</p>
   </section>
@@ -397,15 +456,15 @@ ip addr">Copy</button>
     <div class="codebox">
       <span class="label">inside alpine</span>
       <pre>nano /etc/apk/repositories</pre>
-      <button class="copy-btn" data-copy="nano /etc/apk/repositories">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <p>Add this line at the very <strong>top</strong> of the file:</p>
     <div class="codebox">
       <span class="label">add to repositories</span>
-      <pre>https://mirror.postmarketos.org/postmarketos/v24.06</pre>
-      <button class="copy-btn" data-copy="https://mirror.postmarketos.org/postmarketos/v24.06">Copy</button>
+      <pre>https://mirror.postmarketos.org/postmarketos/<span data-v="pmos">v26.06</span></pre>
+      <button class="copy-btn">Copy</button>
     </div>
-    <p class="small-note">v24.06 is pmOS's current Stable release paired with Alpine v3.20. Check <a href="https://wiki.postmarketos.org/wiki/Releases" target="_blank" rel="noopener">the pmOS releases wiki</a> in case a newer stable version has since shipped &mdash; if so, use that version number instead, everywhere it appears in this guide.</p>
+    <p class="small-note">This URL uses whatever you typed in the box at the top of the page. If a newer pmOS release has shipped since, change it there once and every step updates.</p>
   </section>
 
   <section class="step" id="s7">
@@ -415,8 +474,7 @@ ip addr">Copy</button>
       <span class="label">inside alpine</span>
       <pre>apk add -u --allow-untrusted postmarketos-keys
 apk update && apk upgrade</pre>
-      <button class="copy-btn" data-copy="apk add -u --allow-untrusted postmarketos-keys
-apk update && apk upgrade">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
   </section>
 
@@ -427,31 +485,22 @@ apk update && apk upgrade">Copy</button>
     <div class="codebox">
       <span class="label">inside alpine</span>
       <pre>sudo nano /etc/os-release</pre>
-      <button class="copy-btn" data-copy="sudo nano /etc/os-release">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <p>Select all existing lines and delete them (in nano: <kbd>Ctrl+Shift+6</kbd> or <kbd>Alt+A</kbd> to start a selection, arrow down to the end, then <kbd>Ctrl+K</kbd> to cut &mdash; or just hold Backspace/Delete until the file is empty), then type in:</p>
     <div class="codebox">
       <span class="label">/etc/os-release</span>
-      <pre>PRETTY_NAME="postmarketOS v24.06"
+      <pre>PRETTY_NAME="postmarketOS <span data-v="pmos">v26.06</span>"
 NAME="postmarketOS"
-VERSION_ID="v24.06"
-VERSION="v24.06"
+VERSION_ID="<span data-v="pmos">v26.06</span>"
+VERSION="<span data-v="pmos">v26.06</span>"
 ID="postmarketos"
 ID_LIKE="alpine"
 HOME_URL="https://www.postmarketos.org/"
 SUPPORT_URL="https://gitlab.com/postmarketOS"
 BUG_REPORT_URL="https://gitlab.com/postmarketOS/pmaports/issues"
 LOGO="postmarketos-logo"</pre>
-      <button class="copy-btn" data-copy='PRETTY_NAME="postmarketOS v24.06"
-NAME="postmarketOS"
-VERSION_ID="v24.06"
-VERSION="v24.06"
-ID="postmarketos"
-ID_LIKE="alpine"
-HOME_URL="https://www.postmarketos.org/"
-SUPPORT_URL="https://gitlab.com/postmarketOS"
-BUG_REPORT_URL="https://gitlab.com/postmarketOS/pmaports/issues"
-LOGO="postmarketos-logo"'>Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <p>Then save with <kbd>Ctrl+O</kbd>, Enter, and exit with <kbd>Ctrl+X</kbd>.</p>
   </section>
@@ -462,7 +511,7 @@ LOGO="postmarketos-logo"'>Copy</button>
     <div class="codebox">
       <span class="label">inside alpine</span>
       <pre>sudo apk add openbox cage</pre>
-      <button class="copy-btn" data-copy="sudo apk add openbox cage">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <div class="codebox">
       <span class="label">inside alpine</span>
@@ -474,14 +523,7 @@ font-noto \
 font-noto-cjk \
 font-noto-cjk-extra \
 font-noto-emoji</pre>
-      <button class="copy-btn" data-copy="sudo apk add postmarketos-ui-phosh \
-postmarketos-tweaks \
-firefox \
-mobile-config-firefox \
-font-noto \
-font-noto-cjk \
-font-noto-cjk-extra \
-font-noto-emoji">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <p class="small-note">This is a large install &mdash; give it time on a slower connection.</p>
   </section>
@@ -496,8 +538,7 @@ font-noto-emoji">Copy</button>
       <span class="label">termux</span>
       <pre>pulseaudio --start --exit-idle-time=-1
 pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1</pre>
-      <button class="copy-btn" data-copy="pulseaudio --start --exit-idle-time=-1
-pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
 
     <p><strong>10.2 &mdash; Start Termux:X11 (Termux):</strong></p>
@@ -505,23 +546,22 @@ pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymou
       <span class="label">termux</span>
       <pre>export DISPLAY=:0
 termux-x11 :0 &</pre>
-      <button class="copy-btn" data-copy="export DISPLAY=:0
-termux-x11 :0 &">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
     <p class="small-note">This should open the Termux:X11 app automatically. If it doesn't, open it manually from your app drawer.</p>
 
-    <p><strong>10.3 &mdash; Start virglrenderer, if installed (Termux):</strong></p>
+    <p><strong>10.3 &mdash; Start the virglrenderer server (Termux):</strong></p>
     <div class="codebox">
       <span class="label">termux</span>
       <pre>virgl_test_server_android &</pre>
-      <button class="copy-btn" data-copy="virgl_test_server_android &">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
 
     <p><strong>10.4 &mdash; Log into Alpine as your user:</strong></p>
     <div class="codebox">
       <span class="label">termux</span>
       <pre>proot-distro login alpine --user user --shared-tmp</pre>
-      <button class="copy-btn" data-copy="proot-distro login alpine --user user --shared-tmp">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
 
     <p><strong>10.5 &mdash; Launch Openbox, Cage, and Phosh (inside Alpine):</strong></p>
@@ -531,10 +571,7 @@ termux-x11 :0 &">Copy</button>
 export XDG_RUNTIME_DIR=/tmp
 openbox &
 cage phoc -E '/usr/libexec/phosh' -U &</pre>
-      <button class="copy-btn" data-copy="export DISPLAY=:0
-export XDG_RUNTIME_DIR=/tmp
-openbox &
-cage phoc -E '/usr/libexec/phosh' -U &">Copy</button>
+      <button class="copy-btn">Copy</button>
     </div>
   </section>
 
@@ -556,9 +593,24 @@ cage phoc -E '/usr/libexec/phosh' -U &">Copy</button>
 </div>
 
 <script>
+  var DEFAULTS = { pmos: 'v26.06', alpine: 'v3.24' };
+
+  function applyVersions() {
+    ['pmos', 'alpine'].forEach(function (key) {
+      var field = document.getElementById('in-' + key);
+      var value = field.value.trim() || DEFAULTS[key];
+      document.querySelectorAll('[data-v="' + key + '"]').forEach(function (el) {
+        el.textContent = value;
+      });
+    });
+  }
+
+  document.getElementById('in-pmos').addEventListener('input', applyVersions);
+  document.getElementById('in-alpine').addEventListener('input', applyVersions);
+
   document.querySelectorAll('.copy-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var text = btn.getAttribute('data-copy');
+      var text = btn.parentElement.querySelector('pre').textContent;
       navigator.clipboard.writeText(text).then(function () {
         var original = btn.textContent;
         btn.textContent = 'Copied';
