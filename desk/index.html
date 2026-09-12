@@ -127,6 +127,19 @@
     <strong>What this assumes.</strong> You already have <a href="https://github.com/abhay-byte/fluxlinux" target="_blank" rel="noopener">FluxLinux</a> installed with a Debian container running XFCE, and you can open a terminal inside that desktop. This is not an installation guide &mdash; it starts at the point where you have a working but awkward desktop, and makes it pleasant. Everything below runs <strong>inside the Debian container</strong>, as root, unless it says otherwise.
   </div>
 
+  <div class="callout">
+    <strong>There is a script for all of this.</strong> Everything below is also an interactive script you can run inside the container. It asks before each part, skips what it cannot do, and is safe to run more than once &mdash; any file it replaces is backed up alongside the original with a <code>.bak</code> suffix.
+  </div>
+  <div class="codebox">
+    <span class="label">inside debian</span>
+    <pre>wget https://kbenestad.github.io/shared/desk/setup.sh
+less setup.sh
+bash setup.sh</pre>
+    <button class="copy-btn">Copy</button>
+  </div>
+  <p class="small-note">The middle line is not decoration. Read a script before you run it &mdash; especially one that installs packages as root. Press <code>q</code> to leave <code>less</code>. Run it from a terminal <strong>inside the running desktop</strong>: the appearance settings talk to the live session, so a plain container login shell cannot apply them. It will tell you if that is the case rather than failing quietly.</p>
+  <p class="small-note">Everything the script does is written out step by step below, so you can do any of it by hand instead, or understand what the script changed.</p>
+
   <nav class="toc">
     <p>ON THIS PAGE</p>
     <ol>
